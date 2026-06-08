@@ -2,6 +2,13 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.1.6] - 2026-06-08
+### Fixed
+- Settings button (`[=]`) no longer hidden under Asus navigation controls when Fujin
+  theme is toggled off: changed from `float:right` inside `.banner1` to
+  `position:fixed;top:8px;right:8px;z-index:99998` on `document.body` -- now visible
+  regardless of theme state or banner stacking context
+
 ## [3.1.5] - 2026-06-08
 ### Added
 - Click-outside-to-close for settings panel: clicking anywhere outside the panel (and

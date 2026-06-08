@@ -2,6 +2,39 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.2.0] - 2026-06-08
+### Changed
+- Fluid layout reworked to "full stretch + centered diagram" after confirming the
+  home page network map is a fixed-geometry graphic (hardcoded cell heights,
+  `bgcolor` cells, pixel-positioned connector lines) that cannot reflow:
+  - Outer chrome (banner, status bar, `table.content`, content column) now
+    stretches edge-to-edge to the viewport
+  - `#NM_table_div` is a centered flex group (`justify-content:center`) so the two
+    fixed-geometry halves (topology diagram + status panel) sit centered with
+    symmetric whitespace instead of piling left with empty space on the right
+  - Network map halves no longer forced to grow (`flex:0 0 auto`, `width:auto`,
+    `float:none`); status frame kept at its natural 320px design width
+  - Settings pages (`.FormTable`, `.FormTitle`) fill the full content width
+    (removed the prior 900px ultrawide cap)
+### Fixed
+- Sidebar menu no longer collapses to zero width: the menu lives in an unclassed
+  `<td width="204">`; under `table-layout:fixed` the v3.1.9 attribute removal +
+  forcing the content column to `width:100%` squeezed it to nothing.
+  `patchFluidLayout()` now explicitly sets the three layout columns
+  (spacer `0`, menu `200px`, content `auto`) via `setProperty('width',...,'important')`
+- Removed dead CSS rule `td#mainMenu { width:192px }` -- `#mainMenu` is a child
+  `<div>`, not the `<td>`, so the selector matched nothing and never set the
+  sidebar width
+
+## [3.1.9] - 2026-06-08
+### Fixed
+- `patchFluidLayout()` now removes HTML `align="center"` and per-column `width`
+  attributes from `table.content` (CSS and `setProperty` cannot override HTML
+  attributes); clears `float:left` on the anonymous `#NM_table_div` children
+### Note
+- Intermediate step toward 3.2.0 -- this version introduced the sidebar-collapse
+  regression that 3.2.0 fixes
+
 ## [3.1.8] - 2026-06-08
 ### Added
 - `patchFluidLayout()`: JS-based fluid layout enforcement that uses

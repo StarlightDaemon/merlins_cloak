@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.1.9
+// @version      3.2.0
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -376,24 +376,23 @@
         ];
         if (loadSetting('fluidLayout')) {
             _p.push(
-                /* Outer chrome */
+                /* Outer chrome stretches edge-to-edge */
                 'html, body { min-width:0 !important; overflow-x:hidden !important; }',
-                '.banner1 { width:100% !important; max-width:none !important; box-sizing:border-box !important; }',
+                '.banner1 { width:100% !important; max-width:none !important; margin:0 !important; box-sizing:border-box !important; }',
                 '.statusBar, .minup_bg { width:100% !important; max-width:none !important; margin:0 !important; box-sizing:border-box !important; }',
-                /* Main table */
-                'table.content { width:100% !important; max-width:none !important; table-layout:fixed !important; }',
-                'td#mainMenu { width:192px !important; }',
+                /* Main layout table */
+                'table.content { width:100% !important; max-width:none !important; table-layout:fixed !important; margin:0 !important; }',
+                /* Sidebar menu column keeps a fixed width so it never collapses */
+                'table.content > tbody > tr:first-child > td:nth-child(2) { width:200px !important; }',
                 'td.bgarrow { width:auto !important; max-width:none !important; min-width:0 !important; }',
-                /* Network Map area -- flex with wrap so it collapses on narrow viewports */
+                /* Home network map: the diagram + status panel are both fixed-geometry.
+                   Center them as a group so the unavoidable whitespace is symmetric. */
                 '.NM_table { width:100% !important; }',
-                '#NM_table_div { width:100% !important; display:flex !important; flex-wrap:wrap !important; align-items:flex-start !important; }',
-                '#NM_table_div > div { flex:1 1 320px !important; min-width:0 !important; box-sizing:border-box !important; }',
-                '#statusframe { min-width:300px !important; width:100% !important; box-sizing:border-box !important; }',
-                /* Form pages -- cap readable width on ultrawide */
-                '@media (min-width:1400px) {',
-                '  .FormTable { max-width:900px !important; }',
-                '  .FormTitle { max-width:900px !important; }',
-                '}'
+                '#NM_table_div { width:100% !important; display:flex !important; flex-wrap:wrap !important; justify-content:center !important; align-items:flex-start !important; }',
+                '#NM_table_div > div { float:none !important; width:auto !important; flex:0 0 auto !important; box-sizing:border-box !important; }',
+                '#statusframe { width:320px !important; box-sizing:border-box !important; }',
+                /* Settings pages fill the full width */
+                '.FormTable, .FormTitle { width:100% !important; max-width:none !important; box-sizing:border-box !important; }'
             );
         }
         return _p.join('\n');
@@ -448,24 +447,6 @@
     // =========================================================
 
     function patchFluidLayout() {
-        // Diagnostic: open DevTools console to see what is constraining width.
-        var _diag = function(label, el) {
-            if (!el) { console.log('[fjn] ' + label + ': NOT FOUND'); return; }
-            var cs = window.getComputedStyle(el);
-            console.log('[fjn] ' + label + ' | computed=' + cs.width +
-                ' | inline=' + (el.style.width || 'none') +
-                ' | attr-width=' + (el.getAttribute('width') || 'none') +
-                ' | attr-align=' + (el.getAttribute('align') || 'none'));
-        };
-        _diag('.banner1',      document.querySelector('.banner1'));
-        _diag('table.content', document.querySelector('table.content'));
-        _diag('td[0]',         document.querySelector('table.content tr td:first-child'));
-        _diag('td.bgarrow',    document.querySelector('td.bgarrow'));
-        _diag('#NM_table_div', document.getElementById('NM_table_div'));
-        _diag('#statusframe',  document.getElementById('statusframe'));
-        var _nmfirst = document.querySelector('#NM_table_div > div');
-        _diag('#NM_table_div>div[0]', _nmfirst);
-
         function sp(el, prop, val) {
             if (el) { el.style.setProperty(prop, val, 'important'); }
         }
@@ -475,23 +456,29 @@
             sp(el, 'box-sizing','border-box');
         }
 
-        // HTML attributes like align="center" and width="204" on table/td elements
-        // cannot be overridden by CSS or setProperty -- must be removed directly.
+        // Main layout table. The align="center" HTML attribute and the per-column
+        // width attributes cannot be touched by CSS -- handle them directly here.
         var ct = document.querySelector('table.content');
         if (ct) {
             ct.removeAttribute('align');
-            // Remove width attr from spacer td (first child td, width="17")
+            expand(ct);
+            sp(ct, 'margin', '0');
+            sp(ct, 'table-layout', 'fixed');
+
+            // Three columns: [0] spacer, [1] sidebar menu, [2] content (bgarrow).
+            // Removing each width attribute lets our fixed widths win. The menu
+            // column MUST keep a real width or table-layout:fixed collapses it
+            // to zero (this was the disappearing-sidebar bug).
             var rows = ct.rows;
             if (rows && rows[0]) {
                 var cells = rows[0].cells;
-                if (cells[0]) { cells[0].removeAttribute('width'); }
-                // Keep menu column (cells[1]) at fixed width via CSS; remove attr
-                // so CSS can control it.
-                if (cells[1]) { cells[1].removeAttribute('width'); }
+                if (cells[0]) { cells[0].removeAttribute('width'); sp(cells[0], 'width', '0'); }
+                if (cells[1]) { cells[1].removeAttribute('width'); sp(cells[1], 'width', '200px'); }
+                if (cells[2]) { cells[2].removeAttribute('width'); sp(cells[2], 'width', 'auto'); }
             }
         }
 
-        // Expand banner and status bar (these have CSS width:998px + margin:auto)
+        // Banner + status bar stretch edge-to-edge (CSS gives them width:998px;margin:auto)
         var banner = document.querySelector('.banner1');
         expand(banner);
         sp(banner, 'margin', '0');
@@ -501,7 +488,6 @@
         sp(sb, 'margin', '0');
 
         expand(document.querySelector('.minup_bg'));
-        expand(ct);
         expand(document.querySelector('td.bgarrow'));
 
         // Walk every ancestor of table.content up to body, expanding unknown wrappers.
@@ -520,29 +506,37 @@
         sp(document.body, 'overflow-x', 'hidden');
         sp(document.documentElement, 'min-width', '0');
 
-        // Network Map: #NM_table_div has a child div with inline style="width:50%;float:left"
-        // (anonymous, no class). Remove float and let flex take over.
+        // Home network map. #NM_table_div holds two width:50%;float:left children:
+        // the topology diagram and the status panel, both fixed-geometry graphics
+        // that cannot reflow. Center them as a group so whitespace is symmetric.
         var nmDiv = document.getElementById('NM_table_div');
         if (nmDiv) {
-            sp(nmDiv, 'width',       '100%');
-            sp(nmDiv, 'display',     'flex');
-            sp(nmDiv, 'flex-wrap',   'wrap');
-            sp(nmDiv, 'align-items', 'flex-start');
+            sp(nmDiv, 'width',           '100%');
+            sp(nmDiv, 'display',         'flex');
+            sp(nmDiv, 'flex-wrap',       'wrap');
+            sp(nmDiv, 'justify-content', 'center');
+            sp(nmDiv, 'align-items',     'flex-start');
             var nmChildren = nmDiv.children;
             for (var i = 0; i < nmChildren.length; i++) {
                 sp(nmChildren[i], 'float',      'none');
-                sp(nmChildren[i], 'flex',        '1 1 320px');
-                sp(nmChildren[i], 'min-width',   '0');
-                sp(nmChildren[i], 'box-sizing',  'border-box');
-                sp(nmChildren[i], 'width',       'auto');
+                sp(nmChildren[i], 'width',      'auto');
+                sp(nmChildren[i], 'flex',       '0 0 auto');
+                sp(nmChildren[i], 'box-sizing', 'border-box');
             }
         }
 
-        // Status frame has hardcoded inline width:320px
+        // Status frame keeps its natural design width (it is fixed-layout too).
         var sf = document.getElementById('statusframe');
-        sp(sf, 'min-width',  '300px');
-        sp(sf, 'width',      '100%');
+        sp(sf, 'width',      '320px');
         sp(sf, 'box-sizing', 'border-box');
+
+        // Settings pages: let form tables fill the content column.
+        var forms = document.querySelectorAll('.FormTable, .FormTitle');
+        for (var j = 0; j < forms.length; j++) {
+            sp(forms[j], 'width',      '100%');
+            sp(forms[j], 'max-width',  'none');
+            sp(forms[j], 'box-sizing', 'border-box');
+        }
     }
 
     // =========================================================

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.1.4
+// @version      3.1.5
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       Heath
 // @match        http://192.168.1.1/*
@@ -902,6 +902,25 @@
     //  SETTINGS PANEL + GM MENU
     // =========================================================
 
+    var _panelOutsideHandler = null;
+
+    function attachPanelOutsideClick(panel) {
+        if (_panelOutsideHandler) {
+            document.removeEventListener('click', _panelOutsideHandler);
+        }
+        setTimeout(function () {
+            _panelOutsideHandler = function (e) {
+                var btn = document.getElementById('fjn_settings_btn');
+                if (!panel.contains(e.target) && (!btn || !btn.contains(e.target))) {
+                    panel.style.display = 'none';
+                    document.removeEventListener('click', _panelOutsideHandler);
+                    _panelOutsideHandler = null;
+                }
+            };
+            document.addEventListener('click', _panelOutsideHandler);
+        }, 0);
+    }
+
     var SETTING_ROWS = [
         { key: 'theme',            label: 'Fujin Theme' },
         { key: 'fluidLayout',      label: 'Fluid Layout' },
@@ -920,7 +939,12 @@
     function buildSettingsPanel() {
         var panel = document.getElementById('fjn_settings_panel');
         if (panel) {
-            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                attachPanelOutsideClick(panel);
+            } else {
+                panel.style.display = 'none';
+            }
             return;
         }
 
@@ -992,6 +1016,7 @@
         });
 
         document.body.appendChild(panel);
+        attachPanelOutsideClick(panel);
     }
 
     function injectSettingsButton() {

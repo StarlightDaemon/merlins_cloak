@@ -2,6 +2,17 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.1.5] - 2026-06-08
+### Added
+- Click-outside-to-close for settings panel: clicking anywhere outside the panel (and
+  outside the `[=]` toggle button) now hides it automatically
+- `attachPanelOutsideClick(panel)`: attaches a document-level `click` listener scoped
+  to the panel; `setTimeout(0)` deferral prevents the opening click from firing the
+  handler immediately
+- `_panelOutsideHandler`: stored reference to the active outside-click handler; old
+  handler is removed before a new one is attached so repeated open/close cycles do not
+  accumulate listeners
+
 ## [3.1.4] - 2026-06-08
 ### Added
 - Settings infrastructure: `SETTINGS_DEFAULTS`, `loadSetting(key)`, `saveSetting(key,val)`,

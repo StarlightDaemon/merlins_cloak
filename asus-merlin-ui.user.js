@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.1.6
+// @version      3.1.8
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -342,15 +342,18 @@
             '.NM_table { background-color:var(--fjn-content-bg) !important; border-radius:0 !important; }',
             'table.table1px, .table1px th { background-color:var(--fjn-content-bg) !important; border-color:var(--fjn-content-bg) !important; }',
 
-            /* Status panel -- backgrounds stripped pending full redo */
-            '.unit-block { background:transparent !important; border-radius:0 !important; box-shadow:none !important; }',
-            '.division-block { background:transparent !important; border-radius:0 !important; box-shadow:none !important; }',
-            '.info-block { background:transparent !important; border-bottom:1px solid #333 !important; }',
-            '.statusTitle { background:transparent !important; border-radius:0 !important; box-shadow:none !important; }',
-            '.bar-container { border-radius:0 !important; }',
+            /* Status panel -- direct hex values, CSS vars do not cross iframe boundaries */
+            '.main-block { background:' + FUJIN.bgStatus + ' !important; }',
+            '.unit-block { background:' + FUJIN.bgStatus + ' !important; border-radius:0 !important; box-shadow:none !important; color:' + FUJIN.textPrimary + ' !important; }',
+            '.division-block { background:' + FUJIN.bgDark + ' !important; color:' + FUJIN.textPrimary + ' !important; border-radius:0 !important; box-shadow:none !important; }',
+            '.info-block { background:transparent !important; border-bottom:1px solid ' + FUJIN.borderDark + ' !important; }',
+            '.info-title { color:' + FUJIN.textSecondary + ' !important; }',
+            '.info-content { color:' + FUJIN.textPrimary + ' !important; }',
+            '.statusTitle { background:' + FUJIN.bgDark + ' !important; color:' + FUJIN.textPrimary + ' !important; border-radius:0 !important; box-shadow:none !important; }',
+            '.bar-container { background:' + FUJIN.bgDark + ' !important; border-radius:0 !important; }',
             '.core-color-container { border-radius:0 !important; }',
-            '.tab-block { background:transparent !important; border-radius:0 !important; }',
-            '.tab-click, .tab-block:hover { background:transparent !important; }',
+            '.tab-block { background:' + FUJIN.bgStatus + ' !important; border-radius:0 !important; }',
+            '.tab-click, .tab-block:hover { background:' + FUJIN.contentBg + ' !important; }',
 
             /* Client / device icons */
             '.clientIcon, .clientIcon_no_hover, .imgUserIcon_card, .imgUserIcon_viewlist {',
@@ -373,17 +376,23 @@
         ];
         if (loadSetting('fluidLayout')) {
             _p.push(
-                '.banner1 { width:100% !important; box-sizing:border-box !important; }',
-                '.statusBar, .minup_bg { width:100% !important; max-width:100% !important; box-sizing:border-box !important; }',
-                'table.content { width:100% !important; table-layout:auto !important; }',
-                'td.bgarrow { width:auto !important; max-width:none !important; }',
+                /* Outer chrome */
+                'html, body { min-width:0 !important; overflow-x:hidden !important; }',
+                '.banner1 { width:100% !important; max-width:none !important; box-sizing:border-box !important; }',
+                '.statusBar, .minup_bg { width:100% !important; max-width:none !important; margin:0 !important; box-sizing:border-box !important; }',
+                /* Main table */
+                'table.content { width:100% !important; max-width:none !important; table-layout:fixed !important; }',
+                'td#mainMenu { width:192px !important; }',
+                'td.bgarrow { width:auto !important; max-width:none !important; min-width:0 !important; }',
+                /* Network Map area -- flex with wrap so it collapses on narrow viewports */
                 '.NM_table { width:100% !important; }',
-                '#NM_table_div { width:100% !important; display:flex !important; }',
-                '#NM_table_div > div { flex:1 1 50% !important; min-width:0 !important; }',
-                '#statusframe { width:100% !important; min-width:260px !important; box-sizing:border-box !important; }',
+                '#NM_table_div { width:100% !important; display:flex !important; flex-wrap:wrap !important; align-items:flex-start !important; }',
+                '#NM_table_div > div { flex:1 1 320px !important; min-width:0 !important; box-sizing:border-box !important; }',
+                '#statusframe { min-width:300px !important; width:100% !important; box-sizing:border-box !important; }',
+                /* Form pages -- cap readable width on ultrawide */
                 '@media (min-width:1400px) {',
-                '  .FormTable { max-width:860px !important; }',
-                '  .FormTitle { max-width:860px !important; }',
+                '  .FormTable { max-width:900px !important; }',
+                '  .FormTitle { max-width:900px !important; }',
                 '}'
             );
         }
@@ -429,6 +438,76 @@
         }
 
         mainMenu.style.setProperty('min-height', '100%', 'important');
+    }
+
+    // =========================================================
+    //  FLUID LAYOUT ENFORCEMENT
+    //  CSS !important alone cannot beat JS-set inline styles.
+    //  setProperty with 'important' flag is the highest priority
+    //  override available and wins over everything.
+    // =========================================================
+
+    function patchFluidLayout() {
+        function expand(el) {
+            if (!el) { return; }
+            el.style.setProperty('width',     '100%',        'important');
+            el.style.setProperty('max-width', 'none',        'important');
+            el.style.setProperty('box-sizing','border-box',  'important');
+        }
+
+        // Expand known structural elements
+        expand(document.querySelector('.banner1'));
+        expand(document.querySelector('.statusBar'));
+        expand(document.querySelector('.minup_bg'));
+        expand(document.querySelector('table.content'));
+        expand(document.querySelector('td.bgarrow'));
+
+        // Remove centering margin on banner and status bar
+        var banner = document.querySelector('.banner1');
+        if (banner) { banner.style.setProperty('margin', '0', 'important'); }
+        var sb = document.querySelector('.statusBar');
+        if (sb)     { sb.style.setProperty('margin', '0', 'important'); }
+
+        // Walk every ancestor of table.content up to body and expand it too,
+        // catching any unknown wrapper divs that are still constraining width.
+        var ct = document.querySelector('table.content');
+        if (ct) {
+            var el = ct.parentElement;
+            while (el && el !== document.body) {
+                expand(el);
+                el.style.setProperty('margin-left',  '0', 'important');
+                el.style.setProperty('margin-right', '0', 'important');
+                el = el.parentElement;
+            }
+        }
+
+        // body / html
+        document.body.style.setProperty('min-width',   '0',      'important');
+        document.body.style.setProperty('overflow-x',  'hidden', 'important');
+        document.documentElement.style.setProperty('min-width', '0', 'important');
+
+        // Network Map flex layout
+        var nmDiv = document.getElementById('NM_table_div');
+        if (nmDiv) {
+            nmDiv.style.setProperty('width',           '100%',         'important');
+            nmDiv.style.setProperty('display',         'flex',         'important');
+            nmDiv.style.setProperty('flex-wrap',       'wrap',         'important');
+            nmDiv.style.setProperty('align-items',     'flex-start',   'important');
+        }
+        var nmChildren = nmDiv ? nmDiv.children : [];
+        for (var i = 0; i < nmChildren.length; i++) {
+            nmChildren[i].style.setProperty('flex',      '1 1 320px', 'important');
+            nmChildren[i].style.setProperty('min-width', '0',         'important');
+            nmChildren[i].style.setProperty('box-sizing','border-box','important');
+        }
+
+        // Status frame
+        var sf = document.getElementById('statusframe');
+        if (sf) {
+            sf.style.setProperty('min-width',   '300px',     'important');
+            sf.style.setProperty('width',       '100%',      'important');
+            sf.style.setProperty('box-sizing',  'border-box','important');
+        }
     }
 
     // =========================================================
@@ -1072,6 +1151,11 @@
         if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
         hideNetworkMapCards();
         patchGoToPage();
+        if (loadSetting('fluidLayout')) {
+            patchFluidLayout();
+            setTimeout(patchFluidLayout, 500);
+            setTimeout(patchFluidLayout, 1500);
+        }
         if (loadSetting('menuReorder')) {
             setTimeout(buildMenu, 500);
             setTimeout(buildMenu, 1500);

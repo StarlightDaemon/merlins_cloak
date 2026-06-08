@@ -2,6 +2,39 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.1.8] - 2026-06-08
+### Added
+- `patchFluidLayout()`: JS-based fluid layout enforcement that uses
+  `element.style.setProperty(prop, val, 'important')` to win over Asus JS-set
+  inline widths (which CSS `!important` cannot beat); walks every ancestor of
+  `table.content` up to `body` expanding unknown wrapper divs that were
+  constraining the layout to ~998px; also expands `.banner1`, `.statusBar`,
+  `.minup_bg`, `td.bgarrow`, `#NM_table_div` children, and `#statusframe` via
+  the same priority-forcing path
+- Called at load + `setTimeout(patchFluidLayout, 500)` + `setTimeout(patchFluidLayout, 1500)`
+  to catch late Asus JS initialization; gated on `fluidLayout` setting
+
+### Fixed
+- Fluid layout was still condensed to ~998px despite CSS `!important` rules:
+  root cause was Asus JavaScript setting `element.style.width = '998px'` as a
+  regular inline style, which has higher specificity than any CSS `!important`
+  rule; JS `setProperty` with `'important'` flag is the only way to override it
+
+## [3.1.7] - 2026-06-08
+### Fixed
+- System Status panel and statusframe iframe now correctly theme with Fujin
+  colors: switched from `var(--fjn-*)` CSS custom properties to direct hex
+  values via `FUJIN.*` string concatenation in `buildFujinCSS()` -- CSS custom
+  properties do not resolve across iframe boundaries, so `var(--fjn-bg-status)`
+  was silently falling back to transparent/unset inside `#statusframe`
+- Replaced transparent status panel backgrounds (from v3.1.3 clearing pass)
+  with full Fujin surface coverage: `.main-block`, `.unit-block`,
+  `.division-block`, `.info-block`, `.tab-block`, `.statusTitle`,
+  `.bar-container`, `.core-color-container`, `.tab-click`/`.tab-block:hover`
+### Changed
+- Fluid layout CSS block revised to target all structural elements with
+  `box-sizing:border-box` and zero margins on `.banner1`/`.statusBar`
+
 ## [3.1.6] - 2026-06-08
 ### Fixed
 - Settings button (`[=]`) no longer hidden under Asus navigation controls when Fujin

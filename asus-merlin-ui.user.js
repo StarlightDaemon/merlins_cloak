@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.1.8
+// @version      3.1.9
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -448,66 +448,101 @@
     // =========================================================
 
     function patchFluidLayout() {
+        // Diagnostic: open DevTools console to see what is constraining width.
+        var _diag = function(label, el) {
+            if (!el) { console.log('[fjn] ' + label + ': NOT FOUND'); return; }
+            var cs = window.getComputedStyle(el);
+            console.log('[fjn] ' + label + ' | computed=' + cs.width +
+                ' | inline=' + (el.style.width || 'none') +
+                ' | attr-width=' + (el.getAttribute('width') || 'none') +
+                ' | attr-align=' + (el.getAttribute('align') || 'none'));
+        };
+        _diag('.banner1',      document.querySelector('.banner1'));
+        _diag('table.content', document.querySelector('table.content'));
+        _diag('td[0]',         document.querySelector('table.content tr td:first-child'));
+        _diag('td.bgarrow',    document.querySelector('td.bgarrow'));
+        _diag('#NM_table_div', document.getElementById('NM_table_div'));
+        _diag('#statusframe',  document.getElementById('statusframe'));
+        var _nmfirst = document.querySelector('#NM_table_div > div');
+        _diag('#NM_table_div>div[0]', _nmfirst);
+
+        function sp(el, prop, val) {
+            if (el) { el.style.setProperty(prop, val, 'important'); }
+        }
         function expand(el) {
-            if (!el) { return; }
-            el.style.setProperty('width',     '100%',        'important');
-            el.style.setProperty('max-width', 'none',        'important');
-            el.style.setProperty('box-sizing','border-box',  'important');
+            sp(el, 'width',     '100%');
+            sp(el, 'max-width', 'none');
+            sp(el, 'box-sizing','border-box');
         }
 
-        // Expand known structural elements
-        expand(document.querySelector('.banner1'));
-        expand(document.querySelector('.statusBar'));
+        // HTML attributes like align="center" and width="204" on table/td elements
+        // cannot be overridden by CSS or setProperty -- must be removed directly.
+        var ct = document.querySelector('table.content');
+        if (ct) {
+            ct.removeAttribute('align');
+            // Remove width attr from spacer td (first child td, width="17")
+            var rows = ct.rows;
+            if (rows && rows[0]) {
+                var cells = rows[0].cells;
+                if (cells[0]) { cells[0].removeAttribute('width'); }
+                // Keep menu column (cells[1]) at fixed width via CSS; remove attr
+                // so CSS can control it.
+                if (cells[1]) { cells[1].removeAttribute('width'); }
+            }
+        }
+
+        // Expand banner and status bar (these have CSS width:998px + margin:auto)
+        var banner = document.querySelector('.banner1');
+        expand(banner);
+        sp(banner, 'margin', '0');
+
+        var sb = document.querySelector('.statusBar');
+        expand(sb);
+        sp(sb, 'margin', '0');
+
         expand(document.querySelector('.minup_bg'));
-        expand(document.querySelector('table.content'));
+        expand(ct);
         expand(document.querySelector('td.bgarrow'));
 
-        // Remove centering margin on banner and status bar
-        var banner = document.querySelector('.banner1');
-        if (banner) { banner.style.setProperty('margin', '0', 'important'); }
-        var sb = document.querySelector('.statusBar');
-        if (sb)     { sb.style.setProperty('margin', '0', 'important'); }
-
-        // Walk every ancestor of table.content up to body and expand it too,
-        // catching any unknown wrapper divs that are still constraining width.
-        var ct = document.querySelector('table.content');
+        // Walk every ancestor of table.content up to body, expanding unknown wrappers.
         if (ct) {
             var el = ct.parentElement;
             while (el && el !== document.body) {
                 expand(el);
-                el.style.setProperty('margin-left',  '0', 'important');
-                el.style.setProperty('margin-right', '0', 'important');
+                sp(el, 'margin-left',  '0');
+                sp(el, 'margin-right', '0');
                 el = el.parentElement;
             }
         }
 
         // body / html
-        document.body.style.setProperty('min-width',   '0',      'important');
-        document.body.style.setProperty('overflow-x',  'hidden', 'important');
-        document.documentElement.style.setProperty('min-width', '0', 'important');
+        sp(document.body, 'min-width',  '0');
+        sp(document.body, 'overflow-x', 'hidden');
+        sp(document.documentElement, 'min-width', '0');
 
-        // Network Map flex layout
+        // Network Map: #NM_table_div has a child div with inline style="width:50%;float:left"
+        // (anonymous, no class). Remove float and let flex take over.
         var nmDiv = document.getElementById('NM_table_div');
         if (nmDiv) {
-            nmDiv.style.setProperty('width',           '100%',         'important');
-            nmDiv.style.setProperty('display',         'flex',         'important');
-            nmDiv.style.setProperty('flex-wrap',       'wrap',         'important');
-            nmDiv.style.setProperty('align-items',     'flex-start',   'important');
-        }
-        var nmChildren = nmDiv ? nmDiv.children : [];
-        for (var i = 0; i < nmChildren.length; i++) {
-            nmChildren[i].style.setProperty('flex',      '1 1 320px', 'important');
-            nmChildren[i].style.setProperty('min-width', '0',         'important');
-            nmChildren[i].style.setProperty('box-sizing','border-box','important');
+            sp(nmDiv, 'width',       '100%');
+            sp(nmDiv, 'display',     'flex');
+            sp(nmDiv, 'flex-wrap',   'wrap');
+            sp(nmDiv, 'align-items', 'flex-start');
+            var nmChildren = nmDiv.children;
+            for (var i = 0; i < nmChildren.length; i++) {
+                sp(nmChildren[i], 'float',      'none');
+                sp(nmChildren[i], 'flex',        '1 1 320px');
+                sp(nmChildren[i], 'min-width',   '0');
+                sp(nmChildren[i], 'box-sizing',  'border-box');
+                sp(nmChildren[i], 'width',       'auto');
+            }
         }
 
-        // Status frame
+        // Status frame has hardcoded inline width:320px
         var sf = document.getElementById('statusframe');
-        if (sf) {
-            sf.style.setProperty('min-width',   '300px',     'important');
-            sf.style.setProperty('width',       '100%',      'important');
-            sf.style.setProperty('box-sizing',  'border-box','important');
-        }
+        sp(sf, 'min-width',  '300px');
+        sp(sf, 'width',      '100%');
+        sp(sf, 'box-sizing', 'border-box');
     }
 
     // =========================================================

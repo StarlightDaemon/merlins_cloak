@@ -2,6 +2,26 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.4.0] - 2026-06-09
+### Changed
+- Network map topology reoriented from vertical (top-to-bottom) to horizontal
+  (left-to-right). Internet, Router, and USB nodes now read as a compact strip
+  across the top of the home page; the full-width status area (System Status,
+  Client Status, AiMesh, Internet Status) is the primary content below.
+- `patchTopologyHorizontal()` (new): sets `display:flex; flex-direction:row` on
+  the `_NM_table` tbody so each `<tr>` becomes a node column. Connector rows
+  (single_wan_line, line3_td) are reshaped to 36px-wide horizontal bars.
+  The branch PNG (`line3_img`) is hidden; `line3_single` is re-shown as a bar.
+  The 40px layout spacer td (rowspan=11) is hidden. NM_radius_left/right cells
+  have fixed widths and side box-shadows removed so they stack correctly.
+  All element IDs stay intact -- router JS continues to update node content.
+- `patchNetworkMapHome()`: topology half is now widened to 100% (was centered);
+  calls `patchTopologyHorizontal()` after stacking the two halves. Also shrinks
+  the `#NM_table` container to `height:auto; min-height:0` so the topology strip
+  does not leave a large empty gap below it.
+- CSS addition (widescreenLayout block): `#NM_table { height:auto; min-height:0 }`
+  as the !important stylesheet-level override for the router's inline height.
+
 ## [4.3.0] - 2026-06-09
 ### Added
 - Home page System Status dashboard. The status panel was a 320px-wide iframe

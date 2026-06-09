@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.3.0
+// @version      4.4.0
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -334,7 +334,9 @@
                 '  width:100% !important; box-sizing:border-box !important;',
                 '}',
                 '.main-block > .display-flex.flex-a-center { grid-column:1 / -1 !important; }',
-                '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }'
+                '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }',
+                /* Network map container: auto height so the topology strip is compact */
+                '#NM_table { width:100% !important; height:auto !important; min-height:0 !important; }'
             );
         }
 
@@ -420,11 +422,127 @@
     }
 
     // =========================================================
+    //  NETWORK MAP TOPOLOGY -- HORIZONTAL LAYOUT
+    //  Reshapes the fixed-geometry vertical node chain
+    //  (Internet, Router, USB -- top to bottom) into a compact
+    //  horizontal strip (left to right).
+    //  All element IDs remain intact so router JS keeps working.
+    //  No-op when NM_table_div is absent.
+    // =========================================================
+
+    function patchTopologyHorizontal() {
+        var nmDiv = document.getElementById('NM_table_div');
+        if (!nmDiv || !nmDiv.children[0]) { return; }
+        var topoTable = nmDiv.children[0].getElementsByTagName('table')[0];
+        if (!topoTable) { return; }
+
+        function sp(el, p, v) { if (el) { el.style.setProperty(p, v, 'important'); } }
+        function hide(el) { if (el) { sp(el, 'display', 'none'); } }
+
+        // Make the table a horizontal flex row; each <tr> becomes a node column
+        sp(topoTable, 'display', 'flex');
+        sp(topoTable, 'flex-direction', 'row');
+        sp(topoTable, 'align-items', 'stretch');
+        sp(topoTable, 'height', 'auto');
+        sp(topoTable, 'width', '100%');
+
+        var tbody = topoTable.getElementsByTagName('tbody')[0];
+        if (tbody) {
+            sp(tbody, 'display', 'flex');
+            sp(tbody, 'flex-direction', 'row');
+            sp(tbody, 'align-items', 'stretch');
+            sp(tbody, 'width', '100%');
+        }
+
+        var rows = topoTable.getElementsByTagName('tr');
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if (i === 0) {
+                // Internet node column
+                sp(row, 'display', 'flex');
+                sp(row, 'flex-direction', 'column');
+                sp(row, 'align-items', 'stretch');
+                sp(row, 'flex', '2 1 auto');
+                var spacerTd = row.cells && row.cells[0];
+                if (spacerTd && spacerTd.getAttribute('rowspan')) { hide(spacerTd); }
+            } else if (i === 1) {
+                // Connector: reshape vertical bar to horizontal
+                sp(row, 'display', 'flex');
+                sp(row, 'flex-direction', 'row');
+                sp(row, 'align-items', 'center');
+                sp(row, 'justify-content', 'center');
+                sp(row, 'flex', '0 0 36px');
+                var wanBar = document.getElementById('single_wan');
+                if (wanBar) {
+                    sp(wanBar, 'width', '36px');
+                    sp(wanBar, 'height', '4px');
+                    sp(wanBar, 'margin', 'auto');
+                }
+                hide(document.getElementById('primary_wan_line'));
+                hide(document.getElementById('secondary_wan_line'));
+            } else if (i === 2) {
+                // Router node column
+                sp(row, 'display', 'flex');
+                sp(row, 'flex-direction', 'column');
+                sp(row, 'align-items', 'stretch');
+                sp(row, 'flex', '2 1 auto');
+            } else if (i === 3) {
+                // Branch row: replace split-PNG with a simple horizontal connector
+                sp(row, 'display', 'flex');
+                sp(row, 'flex-direction', 'row');
+                sp(row, 'align-items', 'center');
+                sp(row, 'justify-content', 'center');
+                sp(row, 'flex', '0 0 36px');
+                hide(document.getElementById('line3_img'));
+                var line3s = document.getElementById('line3_single');
+                if (line3s) {
+                    sp(line3s, 'display', 'block');
+                    sp(line3s, 'width', '36px');
+                    sp(line3s, 'height', '4px');
+                    sp(line3s, 'margin', 'auto');
+                }
+            } else if (i === 4) {
+                // USB / Clients column
+                sp(row, 'display', 'flex');
+                sp(row, 'flex-direction', 'column');
+                sp(row, 'align-items', 'stretch');
+                sp(row, 'flex', '1 1 auto');
+                hide(document.getElementById('clientspace_td'));
+            }
+        }
+
+        // Normalize split-card cells: in horizontal mode the icon (NM_radius_left)
+        // stacks on top of the status text (NM_radius_right) within each node column.
+        var allTds = topoTable.getElementsByTagName('td');
+        var j, cn;
+        for (j = 0; j < allTds.length; j++) {
+            cn = allTds[j].className || '';
+            if (cn.indexOf('NM_radius_left') !== -1) {
+                sp(allTds[j], 'width', 'auto');
+                sp(allTds[j], 'min-width', '0');
+                sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'text-align', 'center');
+                sp(allTds[j], 'padding', '10px');
+            } else if (cn.indexOf('NM_radius_right') !== -1) {
+                sp(allTds[j], 'width', 'auto');
+                sp(allTds[j], 'min-width', '0');
+                sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'padding', '6px 10px');
+            } else if (cn.indexOf('NM_radius') !== -1) {
+                sp(allTds[j], 'width', 'auto');
+                sp(allTds[j], 'min-width', '0');
+                sp(allTds[j], 'box-shadow', 'none');
+            }
+        }
+    }
+
+    // =========================================================
     //  NETWORK MAP HOME -- full-width status dashboard
-    //  Stacks the topology diagram over the System Status panel,
-    //  widens the statusframe iframe to full width. The status
-    //  cards are tiled into columns by the grid CSS injected into
-    //  the iframe; height is auto-fit by fitStatusframeHeight().
+    //  Stacks the topology strip (horizontal) over the status
+    //  panel (full width). Status cards are tiled into columns
+    //  by the grid CSS injected into the iframe; height is
+    //  auto-fit by fitStatusframeHeight().
     //  No-op on any page without #NM_table_div.
     // =========================================================
 
@@ -456,11 +574,25 @@
                 sp(half.querySelector('.NM_radius_bottom_container'), 'width', '100%');
                 sp(half.querySelector('#statusframe'), 'width', '100%');
             } else if (innerT) {
-                // Topology half -> center the fixed-geometry diagram
+                // Topology half -> fill full width; horizontal layout applied below
                 sp(innerT, 'float', 'none');
-                sp(innerT, 'margin-left', 'auto');
-                sp(innerT, 'margin-right', 'auto');
+                sp(innerT, 'width', '100%');
+                sp(innerT, 'max-width', '100%');
+                sp(innerT, 'margin-left', '0');
+                sp(innerT, 'margin-right', '0');
             }
+        }
+
+        // Reshape vertical node chain into a horizontal left-to-right strip
+        patchTopologyHorizontal();
+
+        // Shrink the outer NM_table container to wrap only its contents
+        var nmTableCont = document.getElementById('NM_table');
+        if (nmTableCont) {
+            sp(nmTableCont, 'width', '100%');
+            sp(nmTableCont, 'height', 'auto');
+            sp(nmTableCont, 'min-height', '0');
+            sp(nmTableCont, 'padding-bottom', '10px');
         }
     }
 

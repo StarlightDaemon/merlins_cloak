@@ -2,6 +2,29 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.3.0] - 2026-06-09
+### Added
+- Home page System Status dashboard. The status panel was a 320px-wide iframe
+  with ~6 cards stacked in a tall scrolling column. With widescreen on, the home
+  page now stacks the topology diagram (centered) over a full-width System Status
+  strip whose cards tile into responsive columns -- no scrollbar.
+- `patchNetworkMapHome()`: un-floats and stacks the two `#NM_table_div` halves;
+  centers the topology diagram; widens the `#statusframe` iframe (and its table /
+  td / container) to 100%. Detects the status half by the presence of
+  `#statusframe`, so it is order-independent. No-op without `#NM_table_div`.
+- `fitStatusframeHeight()`: reads the same-origin iframe `body.scrollHeight` after
+  the cards reflow and sets the iframe height to match, removing the scrollbar.
+  Scheduled at several delays to catch late CPU-graph rendering.
+- Grid CSS injected into the iframe (via `buildFujinCSS` widescreen block):
+  `.main-block { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)) }`
+  -> 3 columns at the wide layout, gracefully 1 column if the iframe stays narrow.
+  Tab row spans all columns; hidden unit-blocks (`display:none`) drop out of flow.
+### Notes
+- The dashboard is gated on `widescreenLayout` and needs `theme` on as well (the
+  grid CSS rides in the Fujin stylesheet injected into the iframe). Matches the
+  existing theme/layout coupling; acceptable since theme is normally on.
+- Topology diagram remains fixed-geometry; it is centered above the dashboard.
+
 ## [4.2.1] - 2026-06-08
 ### Fixed
 - Home page network map: the System Status panel was wrapping and dropping to the

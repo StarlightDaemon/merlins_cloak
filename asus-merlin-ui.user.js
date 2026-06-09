@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.2.1
+// @version      4.3.0
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -320,7 +320,21 @@
                 '  box-sizing:border-box !important;',
                 '}',
                 /* Content column expands to fill whatever width the table gains */
-                'td.bgarrow { width:auto !important; max-width:none !important; }'
+                'td.bgarrow { width:auto !important; max-width:none !important; }',
+                /* Status dashboard (inside the #statusframe iframe): tile the
+                   unit-block cards into responsive columns instead of one tall
+                   scroll column. auto-fill + minmax keeps it a single column if
+                   the iframe stays narrow, so it degrades gracefully. Inert on the
+                   main document, which has no .main-block. */
+                '.main-block {',
+                '  display:grid !important;',
+                '  grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)) !important;',
+                '  grid-gap:12px !important; gap:12px !important;',
+                '  align-items:start !important;',
+                '  width:100% !important; box-sizing:border-box !important;',
+                '}',
+                '.main-block > .display-flex.flex-a-center { grid-column:1 / -1 !important; }',
+                '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }'
             );
         }
 
@@ -392,33 +406,73 @@
         sp(document.body, 'min-width', '0');
         sp(document.documentElement, 'min-width', '0');
 
-        // Home page only (pages with #NM_table_div): the fixed-geometry network
-        // map does not stretch the content column the way settings forms do, so
-        // without help it stays narrow with a dark gap on the right. Make the
-        // content cell greedy (width:100%) so the column fills the widened table;
-        // the two original 50% float halves then become ~half the wide column each
-        // and sit side by side across it. Center each half's inner table so the
-        // diagram + System Status panel look balanced rather than jammed left.
-        // NO flex here -- flex made the status panel wrap below the diagram.
+        // Home page only (pages with #NM_table_div): make the content cell greedy
+        // so the column fills the widened table, then hand off to the network-map
+        // dashboard layout (stacks topology over a full-width System Status grid).
         var nmDiv = document.getElementById('NM_table_div');
         if (nmDiv && ct) {
             var r0 = ct.rows && ct.rows[0];
             if (r0 && r0.cells && r0.cells[2]) {
                 r0.cells[2].style.setProperty('width', '100%', 'important');
             }
-            sp(nmDiv, 'width', '100%');
-            var kids = nmDiv.children;
-            var k;
-            for (k = 0; k < kids.length; k++) {
-                sp(kids[k], 'text-align', 'center');
-                var innerT = kids[k].getElementsByTagName('table')[0];
+            patchNetworkMapHome();
+        }
+    }
+
+    // =========================================================
+    //  NETWORK MAP HOME -- full-width status dashboard
+    //  Stacks the topology diagram over the System Status panel,
+    //  widens the statusframe iframe to full width. The status
+    //  cards are tiled into columns by the grid CSS injected into
+    //  the iframe; height is auto-fit by fitStatusframeHeight().
+    //  No-op on any page without #NM_table_div.
+    // =========================================================
+
+    function patchNetworkMapHome() {
+        var nmDiv = document.getElementById('NM_table_div');
+        if (!nmDiv) { return; }
+        function sp(el, p, v) { if (el) { el.style.setProperty(p, v, 'important'); } }
+
+        sp(nmDiv, 'width', '100%');
+        sp(nmDiv, 'display', 'block');
+
+        var kids = nmDiv.children;
+        var i;
+        for (i = 0; i < kids.length; i++) {
+            var half = kids[i];
+            sp(half, 'float', 'none');
+            sp(half, 'width', '100%');
+            sp(half, 'box-sizing', 'border-box');
+
+            var innerT = half.getElementsByTagName('table')[0];
+            if (half.querySelector && half.querySelector('#statusframe')) {
+                // System Status half -> fill the full width
+                sp(half, 'margin-top', '14px');
                 if (innerT) {
+                    sp(innerT, 'width', '100%');
                     sp(innerT, 'float', 'none');
-                    sp(innerT, 'margin-left', 'auto');
-                    sp(innerT, 'margin-right', 'auto');
+                    sp(innerT.getElementsByTagName('td')[0], 'width', '100%');
                 }
+                sp(half.querySelector('.NM_radius_bottom_container'), 'width', '100%');
+                sp(half.querySelector('#statusframe'), 'width', '100%');
+            } else if (innerT) {
+                // Topology half -> center the fixed-geometry diagram
+                sp(innerT, 'float', 'none');
+                sp(innerT, 'margin-left', 'auto');
+                sp(innerT, 'margin-right', 'auto');
             }
         }
+    }
+
+    // Auto-fit the statusframe iframe height to its (reflowed) content so the
+    // internal scrollbar disappears. Same-origin, so contentDocument is readable.
+    function fitStatusframeHeight() {
+        var sf = document.getElementById('statusframe');
+        if (!sf) { return; }
+        var iDoc = sf.contentDocument || (sf.contentWindow && sf.contentWindow.document);
+        if (!iDoc || !iDoc.body) { return; }
+        var h = iDoc.body.scrollHeight;
+        if (h && h > 80) { sf.style.setProperty('height', (h + 10) + 'px', 'important'); }
     }
 
     // =========================================================
@@ -436,6 +490,13 @@
             var iDoc = sf.contentDocument || (sf.contentWindow && sf.contentWindow.document);
             if (iDoc && iDoc.body && iDoc.readyState !== 'loading') {
                 injectFujinStyle(iDoc);
+                if (loadSetting('widescreenLayout')) {
+                    iDoc.body.style.setProperty('margin', '0', 'important');
+                    patchNetworkMapHome();
+                    setTimeout(fitStatusframeHeight, 300);
+                    setTimeout(fitStatusframeHeight, 1000);
+                    setTimeout(fitStatusframeHeight, 2500);
+                }
                 return;
             }
             setTimeout(tryInject, 300);
@@ -584,6 +645,7 @@
             setTimeout(patchWidescreenLayout, 800);
             setTimeout(patchWidescreenLayout, 1500);
             setTimeout(patchWidescreenLayout, 3000);
+            setTimeout(fitStatusframeHeight, 3500);
         }
         injectSettingsButton();
     });

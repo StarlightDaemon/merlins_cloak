@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.4.0
+// @version      3.4.1
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -1203,6 +1203,7 @@
     }
 
     function injectSettingsButton() {
+        if (window.self !== window.top) { return; }
         if (document.getElementById('fjn_settings_btn')) { return; }
         var btn = document.createElement('div');
         btn.id = 'fjn_settings_btn';

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.0
+// @version      4.4.1
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -463,7 +463,7 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
-                sp(row, 'flex', '2 1 auto');
+                sp(row, 'flex', '1 1 auto');
                 var spacerTd = row.cells && row.cells[0];
                 if (spacerTd && spacerTd.getAttribute('rowspan')) { hide(spacerTd); }
             } else if (i === 1) {
@@ -486,7 +486,7 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
-                sp(row, 'flex', '2 1 auto');
+                sp(row, 'flex', '1 1 auto');
             } else if (i === 3) {
                 // Branch row: replace split-PNG with a simple horizontal connector
                 sp(row, 'display', 'flex');
@@ -509,6 +509,7 @@
                 sp(row, 'align-items', 'stretch');
                 sp(row, 'flex', '1 1 auto');
                 hide(document.getElementById('clientspace_td'));
+                hide(document.getElementById('clients_td'));
             }
         }
 

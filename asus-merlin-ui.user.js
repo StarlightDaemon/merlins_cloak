@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.4
+// @version      4.4.5
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -342,17 +342,23 @@
                 '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }',
                 /* Network map container: auto height so the topology strip is compact */
                 '#NM_table { width:100% !important; height:auto !important; min-height:0 !important; }',
-                /* Compact topology icons -- scale to 64px so the right column */
-                /* (Clients + AiMesh + USB stacked) stays ~250px tall          */
-                '#iconInternet, #iconRouter, #iconClient {',
-                '  width:64px !important; height:64px !important;',
-                '  background-size:contain !important;',
+                /* Topology icons: background-size uses width+auto so only ONE */
+                /* sprite state shows. background-size:contain scaled the full */
+                /* sprite sheet (both states) into the box = double image bug.  */
+                '#iconInternet, #iconRouter {',
+                '  width:60px !important; height:53px !important;',
+                '  background-size:60px auto !important;',
+                '  margin:0 !important;',
+                '}',
+                '#iconClient {',
+                '  width:60px !important; height:60px !important;',
+                '  background-size:60px auto !important;',
                 '  margin:0 !important;',
                 '}',
                 '.iconAMesh, .iconAMesh_dis, .iconNo, .iconNoM2,',
                 '.iconUSBdisk, .iconM2, .iconPrinter {',
-                '  width:64px !important; height:64px !important;',
-                '  background-size:contain !important;',
+                '  width:60px !important; height:60px !important;',
+                '  background-size:60px auto !important;',
                 '  margin:0 !important;',
                 '}'
             );

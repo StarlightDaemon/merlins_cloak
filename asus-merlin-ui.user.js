@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.1
+// @version      4.4.2
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -269,7 +269,7 @@
             /* Network Map / statusframe */
             '.statusbody { background-color:var(--fjn-bg-status) !important; border-radius:0 !important; }',
             '.NM_radius_bottom_container { background-color:var(--fjn-bg-status) !important; border-radius:0 !important; }',
-            '.NM_table { background-color:var(--fjn-content-bg) !important; border-radius:0 !important; }',
+            '.NM_table { background-color:var(--fjn-bg-page) !important; border-radius:0 !important; }',
             'table.table1px, .table1px th { background-color:var(--fjn-content-bg) !important; border-color:var(--fjn-content-bg) !important; }',
 
             /* Status panel -- direct hex because CSS vars do not cross iframe boundaries */

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.6
+// @version      4.4.7
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -463,10 +463,12 @@
         function sp(el, p, v) { if (el) { el.style.setProperty(p, v, 'important'); } }
         function hide(el) { if (el) { sp(el, 'display', 'none'); } }
 
-        // Make the table a horizontal flex row; each <tr> becomes a node column
+        // Make the table a horizontal flex row; each <tr> becomes a node column.
+        // align-items:center lets Internet/Router nodes be their natural height
+        // and float vertically centered beside the taller right column.
         sp(topoTable, 'display', 'flex');
         sp(topoTable, 'flex-direction', 'row');
-        sp(topoTable, 'align-items', 'stretch');
+        sp(topoTable, 'align-items', 'center');
         sp(topoTable, 'height', 'auto');
         sp(topoTable, 'width', '100%');
 
@@ -474,7 +476,7 @@
         if (tbody) {
             sp(tbody, 'display', 'flex');
             sp(tbody, 'flex-direction', 'row');
-            sp(tbody, 'align-items', 'stretch');
+            sp(tbody, 'align-items', 'center');
             sp(tbody, 'width', '100%');
         }
 
@@ -487,7 +489,6 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
-                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
                 var spacerTd = row.cells && row.cells[0];
                 if (spacerTd && spacerTd.getAttribute('rowspan')) { hide(spacerTd); }
@@ -512,7 +513,6 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
-                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
             } else if (i === 3) {
                 // Branch row: replace split-PNG with a simple horizontal connector
@@ -552,6 +552,7 @@
                 allTds[j].removeAttribute('align');
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');
+                sp(allTds[j], 'height', 'auto');
                 sp(allTds[j], 'box-shadow', 'none');
                 sp(allTds[j], 'display', 'flex');
                 sp(allTds[j], 'justify-content', 'center');
@@ -563,8 +564,9 @@
             } else if (cn.indexOf('NM_radius_right') !== -1) {
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');
+                sp(allTds[j], 'height', 'auto');
                 sp(allTds[j], 'box-shadow', 'none');
-                sp(allTds[j], 'padding', '6px 10px');
+                sp(allTds[j], 'padding', '8px 10px');
             } else if (cn.indexOf('NM_radius') !== -1) {
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');

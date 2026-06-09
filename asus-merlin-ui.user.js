@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.8
+// @version      4.4.9
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -464,13 +464,15 @@
         function hide(el) { if (el) { sp(el, 'display', 'none'); } }
 
         // Make the table a horizontal flex row; each <tr> becomes a node column.
-        // align-items:stretch makes all three node cards (Internet, Router,
-        // right column) share one height -- a matched card row. Each card then
-        // centers its own content vertically via justify-content:center below.
+        // A deliberate fixed strip height (TOPO_H) keeps the three cards compact
+        // and identical instead of letting the right column's stacked sections
+        // balloon the whole strip. align-items:stretch makes all three cards fill
+        // that height; each card centers its own content via justify-content.
+        var TOPO_H = '250px';
         sp(topoTable, 'display', 'flex');
         sp(topoTable, 'flex-direction', 'row');
         sp(topoTable, 'align-items', 'stretch');
-        sp(topoTable, 'height', 'auto');
+        sp(topoTable, 'height', TOPO_H);
         sp(topoTable, 'width', '100%');
 
         var tbody = topoTable.getElementsByTagName('tbody')[0];
@@ -478,6 +480,7 @@
             sp(tbody, 'display', 'flex');
             sp(tbody, 'flex-direction', 'row');
             sp(tbody, 'align-items', 'stretch');
+            sp(tbody, 'height', TOPO_H);
             sp(tbody, 'width', '100%');
         }
 
@@ -583,27 +586,44 @@
             }
         }
 
+        // Right column holds three visual bands across two DOM cells:
+        //   clients_td  -> Clients band + AiMesh band  (so it gets 2x weight)
+        //   usb_td      -> USB band                    (1x weight)
+        // Even weighting makes all three bands ~equal height within the strip.
         var clientsTd = document.getElementById('clients_td');
         if (clientsTd) {
             sp(clientsTd, 'display', 'flex');
             sp(clientsTd, 'flex-direction', 'column');
             sp(clientsTd, 'align-items', 'center');
-            sp(clientsTd, 'justify-content', 'center');
             sp(clientsTd, 'text-align', 'center');
-            sp(clientsTd, 'flex', '1 1 auto');
-            sp(clientsTd, 'padding', '12px 8px');
+            sp(clientsTd, 'flex', '2 1 0');
+            sp(clientsTd, 'padding', '0 8px');
             sp(clientsTd, 'box-sizing', 'border-box');
         }
-        // ameshContainer is populated dynamically; style it now so the
-        // border-top separator is waiting when the content arrives.
+        // Clients band: the icon+count group fills the top half of clients_td.
+        var clientsCont = document.getElementById('clientsContainer');
+        if (clientsCont) {
+            sp(clientsCont, 'display', 'flex');
+            sp(clientsCont, 'flex-direction', 'column');
+            sp(clientsCont, 'align-items', 'center');
+            sp(clientsCont, 'justify-content', 'center');
+            sp(clientsCont, 'flex', '1 1 0');
+            sp(clientsCont, 'width', '100%');
+        }
+        // AiMesh band: fills the bottom half of clients_td, divided by a rule.
+        // Populated dynamically, so style it now -- waiting for its content.
         var ameshCont = document.getElementById('ameshContainer');
         if (ameshCont) {
+            sp(ameshCont, 'display', 'flex');
+            sp(ameshCont, 'flex-direction', 'column');
+            sp(ameshCont, 'align-items', 'center');
+            sp(ameshCont, 'justify-content', 'center');
+            sp(ameshCont, 'flex', '1 1 0');
             sp(ameshCont, 'width', '100%');
             sp(ameshCont, 'text-align', 'center');
             sp(ameshCont, 'border-top', '1px solid ' + FUJIN.borderMenu);
-            sp(ameshCont, 'padding-top', '10px');
-            sp(ameshCont, 'margin-top', '8px');
         }
+        // USB band: one cell, one band -> 1x weight, content centered.
         var usbTd = document.getElementById('usb_td');
         if (usbTd) {
             sp(usbTd, 'min-height', '0');
@@ -612,8 +632,8 @@
             sp(usbTd, 'align-items', 'center');
             sp(usbTd, 'justify-content', 'center');
             sp(usbTd, 'text-align', 'center');
-            sp(usbTd, 'flex', '1 1 auto');
-            sp(usbTd, 'padding', '12px 8px');
+            sp(usbTd, 'flex', '1 1 0');
+            sp(usbTd, 'padding', '0 8px');
             sp(usbTd, 'box-sizing', 'border-box');
             sp(usbTd, 'border-top', '1px solid ' + FUJIN.borderMenu);
         }

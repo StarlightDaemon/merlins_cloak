@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.2.0
+// @version      3.3.0
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -38,18 +38,48 @@
     // =========================================================
 
     var SETTINGS_DEFAULTS = {
-        theme:            true,
-        fluidLayout:      true,
-        menuReorder:      true,
-        clientList:       true,
-        routerInfo:       true,
-        logoLink:         true,
-        hideAiProtection: true,
-        hideParental:     true,
-        hideUsb:          true,
-        hideAlexa:        true,
-        hideQis:          true
+        theme:               true,
+        fluidLayout:         true,
+        menuReorder:         true,
+        clientList:          true,
+        routerInfo:          true,
+        logoLink:            true,
+        hideTitleDown:       true,
+        hideNetworkMapCards: true,
+        hideAiProtection:    true,
+        hideParental:        true,
+        hideUsb:             true,
+        hideAlexa:           true,
+        hideQis:             true
     };
+
+    // A preset is a full settings object applied in one click via applyPreset().
+    // PRESET_THEME_ONLY = stock Asus layout + Fujin colors only: every layout
+    // customization is off so the theme can be perfected against the default UI.
+    // (Full customization = SETTINGS_DEFAULTS, since all defaults are true.)
+    var PRESET_THEME_ONLY = {
+        theme:               true,
+        fluidLayout:         false,
+        menuReorder:         false,
+        clientList:          false,
+        routerInfo:          false,
+        logoLink:            false,
+        hideTitleDown:       false,
+        hideNetworkMapCards: false,
+        hideAiProtection:    false,
+        hideParental:        false,
+        hideUsb:             false,
+        hideAlexa:           false,
+        hideQis:             false
+    };
+
+    function applyPreset(preset) {
+        var k;
+        for (k in preset) {
+            if (preset.hasOwnProperty(k)) { saveSetting(k, preset[k]); }
+        }
+        location.reload();
+    }
 
     function loadSetting(key) {
         var def = SETTINGS_DEFAULTS[key];
@@ -1036,6 +1066,8 @@
         { key: 'clientList',       label: 'Client List Item' },
         { key: 'routerInfo',       label: 'Router Info Panel' },
         { key: 'logoLink',         label: 'Logo Home Link' },
+        { key: 'hideTitleDown',    label: 'Hide Titledown Bar' },
+        { key: 'hideNetworkMapCards', label: 'Hide Map Cards' },
         { key: null,               label: 'Hidden Items' },
         { key: 'hideAiProtection', label: 'Hide: AiProtection' },
         { key: 'hideParental',     label: 'Hide: Parental Controls' },
@@ -1092,6 +1124,16 @@
             }
         }
 
+        html += '<div style="padding:4px 12px;font-size:11px;' +
+            'color:' + FUJIN.textMuted + ';' +
+            'border-top:1px solid ' + FUJIN.borderMenu + ';margin-top:4px;">Presets</div>';
+        html += '<div id="fjn_preset_theme" style="padding:7px 12px;cursor:pointer;' +
+            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
+            'color:' + FUJIN.textLink + ';">Theme only (stock layout)</div>';
+        html += '<div id="fjn_preset_full" style="padding:7px 12px;cursor:pointer;' +
+            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
+            'color:' + FUJIN.textLink + ';">Full customization</div>';
+
         html += '<div id="fjn_reset" style="padding:7px 12px;cursor:pointer;' +
             'text-align:center;color:' + FUJIN.textHint + ';' +
             'border-top:1px solid ' + FUJIN.borderMenu + ';">Reset to defaults</div>';
@@ -1114,6 +1156,16 @@
         panel.querySelector('#fjn_close').addEventListener('click', function () {
             panel.style.display = 'none';
         });
+
+        var presetTheme = panel.querySelector('#fjn_preset_theme');
+        presetTheme.addEventListener('mouseover', function () { presetTheme.style.backgroundColor = FUJIN.navBg; });
+        presetTheme.addEventListener('mouseout',  function () { presetTheme.style.backgroundColor = ''; });
+        presetTheme.addEventListener('click', function () { applyPreset(PRESET_THEME_ONLY); });
+
+        var presetFull = panel.querySelector('#fjn_preset_full');
+        presetFull.addEventListener('mouseover', function () { presetFull.style.backgroundColor = FUJIN.navBg; });
+        presetFull.addEventListener('mouseout',  function () { presetFull.style.backgroundColor = ''; });
+        presetFull.addEventListener('click', function () { applyPreset(SETTINGS_DEFAULTS); });
 
         panel.querySelector('#fjn_reset').addEventListener('click', function () {
             var k;
@@ -1167,19 +1219,19 @@
     //  INIT
     // =========================================================
 
-    if (loadSetting('theme'))    { injectFujinStyle(document); }
-    if (loadSetting('logoLink')) { makeLogoLink(); }
-    hideTitleDown();
+    if (loadSetting('theme'))         { injectFujinStyle(document); }
+    if (loadSetting('logoLink'))      { makeLogoLink(); }
+    if (loadSetting('hideTitleDown')) { hideTitleDown(); }
     waitForMenu();
-    if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
+    if (loadSetting('routerInfo'))    { injectRouterInfoIntoIframe(); }
     registerMenuCommands();
 
     window.addEventListener('load', function () {
-        if (loadSetting('logoLink'))   { makeLogoLink(); }
-        hideTitleDown();
-        if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
-        hideNetworkMapCards();
-        patchGoToPage();
+        if (loadSetting('logoLink'))      { makeLogoLink(); }
+        if (loadSetting('hideTitleDown')) { hideTitleDown(); }
+        if (loadSetting('routerInfo'))    { injectRouterInfoIntoIframe(); }
+        if (loadSetting('hideNetworkMapCards')) { hideNetworkMapCards(); }
+        if (loadSetting('clientList'))    { patchGoToPage(); }
         if (loadSetting('fluidLayout')) {
             patchFluidLayout();
             setTimeout(patchFluidLayout, 500);
@@ -1191,8 +1243,10 @@
         } else {
             setTimeout(hideMenuItems, 500);
         }
-        setTimeout(hideNetworkMapCards, 1500);
-        setTimeout(hideNetworkMapCards, 3000);
+        if (loadSetting('hideNetworkMapCards')) {
+            setTimeout(hideNetworkMapCards, 1500);
+            setTimeout(hideNetworkMapCards, 3000);
+        }
         injectSettingsButton();
     });
 

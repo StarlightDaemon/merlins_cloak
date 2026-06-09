@@ -2,6 +2,29 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.3.0] - 2026-06-08
+### Added
+- Clean theme/layout separation so the Fujin theme can be perfected against the
+  stock Asus layout. Every layout customization is now individually toggleable.
+- Two new toggles closing the last hardwired gaps:
+  - `hideTitleDown` -- was always-on; hides the titledown bar + Merlin logo
+  - `hideNetworkMapCards` -- was always-on; hides View List button, USB card,
+    AiMesh node count on the home page
+- One-click presets in the settings panel:
+  - **Theme only (stock layout)** -- `applyPreset(PRESET_THEME_ONLY)`: theme on,
+    every layout customization off (fluidLayout, menuReorder, clientList,
+    routerInfo, logoLink, hideTitleDown, hideNetworkMapCards, and all 5 menu
+    hides) -- a clean canvas for theme work
+  - **Full customization** -- `applyPreset(SETTINGS_DEFAULTS)`: restores all
+    features on
+### Changed
+- `hideTitleDown()` gated on `hideTitleDown` setting (init + load)
+- `hideNetworkMapCards()` gated on `hideNetworkMapCards` setting (load + both
+  setTimeout retries)
+- `patchGoToPage()` gated on `clientList` (it is client-grid plumbing; safely
+  no-ops without the grid, now formally tied to it)
+- All 13 feature toggles default to `true` -- first-install behavior unchanged
+
 ## [3.2.0] - 2026-06-08
 ### Changed
 - Fluid layout reworked to "full stretch + centered diagram" after confirming the

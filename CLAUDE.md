@@ -60,9 +60,14 @@ The project is two separable layers. **The theme is the goal; the customizations
 | CUSTOMIZATION | `clientList` | Custom Client List menu item + grid (also gates `patchGoToPage`) | `injectClientListMenuItem` |
 | CUSTOMIZATION | `routerInfo` | Op-mode + firmware block in statusframe | `injectRouterInfoIntoIframe` |
 | CUSTOMIZATION | `logoLink` | Wraps logo in home link | `makeLogoLink` |
-| CUSTOMIZATION | `hideTitleDown` | Hides titledown bar + Merlin logo | `hideTitleDown` |
-| CUSTOMIZATION | `hideNetworkMapCards` | Hides View List / USB card / AiMesh count on home | `hideNetworkMapCards` |
-| CUSTOMIZATION | `hideAiProtection`/`hideParental`/`hideUsb`/`hideAlexa`/`hideQis` | Hide individual menu items | `getHideIds` → `hideMenuItems` |
+| HIDE (header) | `hideTitleDownBar` | Hides titledown bar | `hideTitleDown` (self-gates) |
+| HIDE (header) | `hideMerlinLogo` | Hides Merlin logo | `hideTitleDown` (self-gates) |
+| HIDE (home) | `hideViewListBtn` | Hides View List button | `hideNetworkMapCards` (self-gates) |
+| HIDE (home) | `hideUsbCard` | Hides USB card on network map | `hideNetworkMapCards` (self-gates) |
+| HIDE (home) | `hideAimeshCount` | Hides AiMesh node count | `hideNetworkMapCards` (self-gates) |
+| HIDE (menu) | `hideAiProtection`/`hideParental`/`hideUsb`/`hideAlexa`/`hideQis` | Hide individual menu items | `getHideIds` → `hideMenuItems` |
+
+**Release principle (v3.4.0):** NOTHING is hidden permanently. Every hidden default element has its own independent toggle — `hideTitleDown()` and `hideNetworkMapCards()` self-gate each element rather than bundling. When adding any new hide, give it its own `SETTINGS_DEFAULTS` key + `SETTING_ROWS` entry + `PRESET_THEME_ONLY: false` line. No exceptions — this is required for the public release's optionality guarantee.
 
 **Known coupling (low priority):** the `fluidLayout` *CSS* block lives inside `buildFujinCSS`, which only injects when `theme` is on. So `fluidLayout` on + `theme` off = JS widths apply but CSS rules don't. Irrelevant for "Theme only" (theme is on); fix later if fluid-without-theme is ever wanted.
 

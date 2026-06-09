@@ -2,6 +2,26 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [3.4.0] - 2026-06-08
+### Changed
+- Full optionality for release: every hidden default element now has its own
+  independent toggle. Nothing is hidden permanently.
+- Split the two bundled hide-toggles into five granular ones:
+  - `hideTitleDown` -> `hideTitleDownBar` (titledown bar) + `hideMerlinLogo`
+    (Merlin logo)
+  - `hideNetworkMapCards` -> `hideViewListBtn` (View List button) + `hideUsbCard`
+    (USB card) + `hideAimeshCount` (AiMesh node count)
+- `hideTitleDown()` and `hideNetworkMapCards()` now self-gate each element on its
+  own setting; init/load call them unconditionally
+- Settings panel groups the hides under three sub-headers: Hide: Header /
+  Hide: Home Page / Hide: Menu Items (menu-item hide labels simplified)
+- `PRESET_THEME_ONLY` updated to flip all five new keys off
+### Migration
+- The old `hideTitleDown` / `hideNetworkMapCards` storage keys are now unused
+  (harmless if left in GM storage). The five replacements default to `true`, so
+  out-of-box hiding behavior is unchanged. Anyone who had toggled a bundle OFF
+  should re-toggle the matching granular items.
+
 ## [3.3.0] - 2026-06-08
 ### Added
 - Clean theme/layout separation so the Fujin theme can be perfected against the

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin UI Customizer
 // @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.3.0
+// @version      3.4.0
 // @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -38,19 +38,25 @@
     // =========================================================
 
     var SETTINGS_DEFAULTS = {
-        theme:               true,
-        fluidLayout:         true,
-        menuReorder:         true,
-        clientList:          true,
-        routerInfo:          true,
-        logoLink:            true,
-        hideTitleDown:       true,
-        hideNetworkMapCards: true,
-        hideAiProtection:    true,
-        hideParental:        true,
-        hideUsb:             true,
-        hideAlexa:           true,
-        hideQis:             true
+        theme:            true,
+        fluidLayout:      true,
+        menuReorder:      true,
+        clientList:       true,
+        routerInfo:       true,
+        logoLink:         true,
+        // Header chrome hides
+        hideTitleDownBar: true,
+        hideMerlinLogo:   true,
+        // Home page network-map hides
+        hideViewListBtn:  true,
+        hideUsbCard:      true,
+        hideAimeshCount:  true,
+        // Menu item hides
+        hideAiProtection: true,
+        hideParental:     true,
+        hideUsb:          true,
+        hideAlexa:        true,
+        hideQis:          true
     };
 
     // A preset is a full settings object applied in one click via applyPreset().
@@ -58,19 +64,22 @@
     // customization is off so the theme can be perfected against the default UI.
     // (Full customization = SETTINGS_DEFAULTS, since all defaults are true.)
     var PRESET_THEME_ONLY = {
-        theme:               true,
-        fluidLayout:         false,
-        menuReorder:         false,
-        clientList:          false,
-        routerInfo:          false,
-        logoLink:            false,
-        hideTitleDown:       false,
-        hideNetworkMapCards: false,
-        hideAiProtection:    false,
-        hideParental:        false,
-        hideUsb:             false,
-        hideAlexa:           false,
-        hideQis:             false
+        theme:            true,
+        fluidLayout:      false,
+        menuReorder:      false,
+        clientList:       false,
+        routerInfo:       false,
+        logoLink:         false,
+        hideTitleDownBar: false,
+        hideMerlinLogo:   false,
+        hideViewListBtn:  false,
+        hideUsbCard:      false,
+        hideAimeshCount:  false,
+        hideAiProtection: false,
+        hideParental:     false,
+        hideUsb:          false,
+        hideAlexa:        false,
+        hideQis:          false
     };
 
     function applyPreset(preset) {
@@ -574,12 +583,15 @@
     // =========================================================
 
     function hideTitleDown() {
-        var el = document.querySelector('.titledown');
-        if (el) { el.style.setProperty('display', 'none', 'important'); }
-
-        var merlinImg = document.querySelector('img[src*="merlin-logo"]');
-        if (merlinImg && merlinImg.parentElement) {
-            merlinImg.parentElement.style.setProperty('display', 'none', 'important');
+        if (loadSetting('hideTitleDownBar')) {
+            var el = document.querySelector('.titledown');
+            if (el) { el.style.setProperty('display', 'none', 'important'); }
+        }
+        if (loadSetting('hideMerlinLogo')) {
+            var merlinImg = document.querySelector('img[src*="merlin-logo"]');
+            if (merlinImg && merlinImg.parentElement) {
+                merlinImg.parentElement.style.setProperty('display', 'none', 'important');
+            }
         }
     }
 
@@ -870,19 +882,25 @@
                       window.location.pathname === '/';
         if (!isIndex) { return; }
 
-        var viewList = document.querySelector('input[value="View List"]');
-        if (viewList && viewList.parentElement) {
-            viewList.parentElement.style.setProperty('display', 'none', 'important');
+        if (loadSetting('hideViewListBtn')) {
+            var viewList = document.querySelector('input[value="View List"]');
+            if (viewList && viewList.parentElement) {
+                viewList.parentElement.style.setProperty('display', 'none', 'important');
+            }
         }
 
-        var usbStatus = document.getElementById('usb_status');
-        if (usbStatus && usbStatus.parentElement) {
-            usbStatus.parentElement.style.setProperty('display', 'none', 'important');
+        if (loadSetting('hideUsbCard')) {
+            var usbStatus = document.getElementById('usb_status');
+            if (usbStatus && usbStatus.parentElement) {
+                usbStatus.parentElement.style.setProperty('display', 'none', 'important');
+            }
         }
 
-        var aimeshNodes = document.querySelectorAll('.aimesh_node, #aimesh_node_status, [id*="aimesh_num"]');
-        for (var ai = 0; ai < aimeshNodes.length; ai++) {
-            aimeshNodes[ai].style.setProperty('display', 'none', 'important');
+        if (loadSetting('hideAimeshCount')) {
+            var aimeshNodes = document.querySelectorAll('.aimesh_node, #aimesh_node_status, [id*="aimesh_num"]');
+            for (var ai = 0; ai < aimeshNodes.length; ai++) {
+                aimeshNodes[ai].style.setProperty('display', 'none', 'important');
+            }
         }
     }
 
@@ -1066,14 +1084,19 @@
         { key: 'clientList',       label: 'Client List Item' },
         { key: 'routerInfo',       label: 'Router Info Panel' },
         { key: 'logoLink',         label: 'Logo Home Link' },
-        { key: 'hideTitleDown',    label: 'Hide Titledown Bar' },
-        { key: 'hideNetworkMapCards', label: 'Hide Map Cards' },
-        { key: null,               label: 'Hidden Items' },
-        { key: 'hideAiProtection', label: 'Hide: AiProtection' },
-        { key: 'hideParental',     label: 'Hide: Parental Controls' },
-        { key: 'hideUsb',          label: 'Hide: USB Application' },
-        { key: 'hideAlexa',        label: 'Hide: Amazon Alexa' },
-        { key: 'hideQis',          label: 'Hide: Quick Internet Setup' }
+        { key: null,               label: 'Hide: Header' },
+        { key: 'hideTitleDownBar', label: 'Titledown Bar' },
+        { key: 'hideMerlinLogo',   label: 'Merlin Logo' },
+        { key: null,               label: 'Hide: Home Page' },
+        { key: 'hideViewListBtn',  label: 'View List Button' },
+        { key: 'hideUsbCard',      label: 'USB Card' },
+        { key: 'hideAimeshCount',  label: 'AiMesh Node Count' },
+        { key: null,               label: 'Hide: Menu Items' },
+        { key: 'hideAiProtection', label: 'AiProtection' },
+        { key: 'hideParental',     label: 'Parental Controls' },
+        { key: 'hideUsb',          label: 'USB Application' },
+        { key: 'hideAlexa',        label: 'Amazon Alexa' },
+        { key: 'hideQis',          label: 'Quick Internet Setup' }
     ];
 
     function buildSettingsPanel() {
@@ -1219,19 +1242,19 @@
     //  INIT
     // =========================================================
 
-    if (loadSetting('theme'))         { injectFujinStyle(document); }
-    if (loadSetting('logoLink'))      { makeLogoLink(); }
-    if (loadSetting('hideTitleDown')) { hideTitleDown(); }
+    if (loadSetting('theme'))      { injectFujinStyle(document); }
+    if (loadSetting('logoLink'))   { makeLogoLink(); }
+    hideTitleDown();               // self-gates per element (hideTitleDownBar / hideMerlinLogo)
     waitForMenu();
-    if (loadSetting('routerInfo'))    { injectRouterInfoIntoIframe(); }
+    if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
     registerMenuCommands();
 
     window.addEventListener('load', function () {
-        if (loadSetting('logoLink'))      { makeLogoLink(); }
-        if (loadSetting('hideTitleDown')) { hideTitleDown(); }
-        if (loadSetting('routerInfo'))    { injectRouterInfoIntoIframe(); }
-        if (loadSetting('hideNetworkMapCards')) { hideNetworkMapCards(); }
-        if (loadSetting('clientList'))    { patchGoToPage(); }
+        if (loadSetting('logoLink'))   { makeLogoLink(); }
+        hideTitleDown();           // self-gates per element
+        if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
+        hideNetworkMapCards();     // self-gates per element (hideViewListBtn / hideUsbCard / hideAimeshCount)
+        if (loadSetting('clientList')) { patchGoToPage(); }
         if (loadSetting('fluidLayout')) {
             patchFluidLayout();
             setTimeout(patchFluidLayout, 500);
@@ -1243,10 +1266,8 @@
         } else {
             setTimeout(hideMenuItems, 500);
         }
-        if (loadSetting('hideNetworkMapCards')) {
-            setTimeout(hideNetworkMapCards, 1500);
-            setTimeout(hideNetworkMapCards, 3000);
-        }
+        setTimeout(hideNetworkMapCards, 1500);
+        setTimeout(hideNetworkMapCards, 3000);
         injectSettingsButton();
     });
 

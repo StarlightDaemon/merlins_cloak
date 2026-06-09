@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.2.0
+// @version      4.2.1
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -392,25 +392,31 @@
         sp(document.body, 'min-width', '0');
         sp(document.documentElement, 'min-width', '0');
 
-        // Home network map is fixed-geometry (hardcoded cell sizes, bgcolor cells,
-        // pixel-positioned connectors) and cannot reflow. Spread its two halves
-        // (topology diagram + System Status panel) across the widened column with
-        // space-evenly so they use the new width instead of piling left with a
-        // dark gap on the right. No-op on pages without #NM_table_div.
+        // Home page only (pages with #NM_table_div): the fixed-geometry network
+        // map does not stretch the content column the way settings forms do, so
+        // without help it stays narrow with a dark gap on the right. Make the
+        // content cell greedy (width:100%) so the column fills the widened table;
+        // the two original 50% float halves then become ~half the wide column each
+        // and sit side by side across it. Center each half's inner table so the
+        // diagram + System Status panel look balanced rather than jammed left.
+        // NO flex here -- flex made the status panel wrap below the diagram.
         var nmDiv = document.getElementById('NM_table_div');
-        if (nmDiv) {
+        if (nmDiv && ct) {
+            var r0 = ct.rows && ct.rows[0];
+            if (r0 && r0.cells && r0.cells[2]) {
+                r0.cells[2].style.setProperty('width', '100%', 'important');
+            }
             sp(nmDiv, 'width', '100%');
-            sp(nmDiv, 'display', 'flex');
-            sp(nmDiv, 'flex-wrap', 'wrap');
-            sp(nmDiv, 'justify-content', 'space-evenly');
-            sp(nmDiv, 'align-items', 'flex-start');
             var kids = nmDiv.children;
             var k;
             for (k = 0; k < kids.length; k++) {
-                sp(kids[k], 'float', 'none');
-                sp(kids[k], 'width', 'auto');
-                sp(kids[k], 'flex', '0 0 auto');
-                sp(kids[k], 'box-sizing', 'border-box');
+                sp(kids[k], 'text-align', 'center');
+                var innerT = kids[k].getElementsByTagName('table')[0];
+                if (innerT) {
+                    sp(innerT, 'float', 'none');
+                    sp(innerT, 'margin-left', 'auto');
+                    sp(innerT, 'margin-right', 'auto');
+                }
             }
         }
     }

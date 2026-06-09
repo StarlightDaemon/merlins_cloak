@@ -2,6 +2,22 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.2.1] - 2026-06-08
+### Fixed
+- Home page network map: the System Status panel was wrapping and dropping to the
+  bottom of the page. Cause: the v4.2.0 `#NM_table_div { display:flex; flex-wrap:wrap }`
+  un-floated the two halves to their natural widths, which exceeded the column and
+  forced the second half (status panel) onto a new line.
+- Replaced the flex approach with a scoped fix (only runs where `#NM_table_div`
+  exists, i.e. the home page): make the content cell greedy (`width:100%`) so the
+  column fills the widened table, keep the original `width:50%;float:left` halves
+  so they sit side by side, and center each half's inner table for balance.
+- Settings pages (Traffic Analyzer, etc.) confirmed unaffected -- they already
+  reflow to fill the widened layout, and this fix is gated off the network map.
+### Note
+- Each page will be reviewed individually for widescreen edge cases; the home page
+  network map was the first and most visible.
+
 ## [4.2.0] - 2026-06-08
 ### Fixed
 - Widescreen layout now visibly applies. Confirmed via live in-page diagnostic:

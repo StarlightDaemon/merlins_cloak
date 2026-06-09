@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.0.0
+// @version      4.1.0
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -22,7 +22,8 @@
     // =========================================================
 
     var SETTINGS_DEFAULTS = {
-        theme: true
+        theme:           true,
+        widescreenLayout: true
     };
 
     function loadSetting(key) {
@@ -315,6 +316,45 @@
     }
 
     // =========================================================
+    //  WIDESCREEN LAYOUT
+    //  Expands the 998px fixed layout to clamp(998px,80vw,1600px).
+    //  CSS !important handles the static stylesheet rule; JS setProperty
+    //  with 'important' beats any Asus inline widths set after load.
+    //  Sidebar column is pinned at 204px so it cannot collapse.
+    // =========================================================
+
+    function patchWidescreenLayout() {
+        var W = 'clamp(998px,80vw,1600px)';
+
+        var banner = document.querySelector('.banner1');
+        if (banner) {
+            banner.style.setProperty('width', W, 'important');
+            banner.style.setProperty('margin-left', 'auto', 'important');
+            banner.style.setProperty('margin-right', 'auto', 'important');
+        }
+
+        var sb = document.querySelector('.statusBar');
+        if (!sb) { sb = document.querySelector('.minup_bg'); }
+        if (sb) {
+            sb.style.setProperty('width', W, 'important');
+            sb.style.setProperty('margin-left', 'auto', 'important');
+            sb.style.setProperty('margin-right', 'auto', 'important');
+        }
+
+        var ct = document.querySelector('table.content');
+        if (ct) {
+            ct.removeAttribute('align');
+            ct.style.setProperty('width', W, 'important');
+            ct.style.setProperty('margin-left', 'auto', 'important');
+            ct.style.setProperty('margin-right', 'auto', 'important');
+            var rows = ct.rows;
+            if (rows && rows[0] && rows[0].cells && rows[0].cells[1]) {
+                rows[0].cells[1].style.setProperty('width', '204px', 'important');
+            }
+        }
+    }
+
+    // =========================================================
     //  STATUSFRAME THEME INJECTION
     //  The statusframe iframe is same-origin but loads separately.
     //  Inject the theme into it whenever it (re)loads.
@@ -385,6 +425,19 @@
             'box-shadow:0 4px 16px rgba(0,0,0,0.5);';
 
         var themeOn = loadSetting('theme');
+        var wsOn    = loadSetting('widescreenLayout');
+
+        function rowHTML(key, label, on) {
+            return '<div data-fjn-key="' + key + '" style="padding:7px 12px;cursor:pointer;' +
+                'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
+                'display:flex;justify-content:space-between;align-items:center;">' +
+                '<span>' + label + '</span>' +
+                '<span style="font-size:11px;margin-left:12px;color:' +
+                (on ? FUJIN.ghz24 : FUJIN.textMuted) + ';">' +
+                (on ? '[ON]' : '[OFF]') + '</span>' +
+                '</div>';
+        }
+
         var html =
             '<div style="background:' + FUJIN.bgTitle + ';padding:8px 12px;' +
             'display:flex;justify-content:space-between;align-items:center;">' +
@@ -392,24 +445,24 @@
             '<span id="fjn_close" style="cursor:pointer;padding:0 4px;' +
             'color:' + FUJIN.textSecondary + ';">x</span>' +
             '</div>' +
-            '<div data-fjn-key="theme" style="padding:7px 12px;cursor:pointer;' +
-            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
-            'display:flex;justify-content:space-between;align-items:center;">' +
-            '<span>Fujin Theme</span>' +
-            '<span style="font-size:11px;margin-left:12px;color:' +
-            (themeOn ? FUJIN.ghz24 : FUJIN.textMuted) + ';">' +
-            (themeOn ? '[ON]' : '[OFF]') + '</span>' +
-            '</div>';
+            rowHTML('theme',           'Fujin Theme',       themeOn) +
+            rowHTML('widescreenLayout', 'Widescreen Layout', wsOn);
 
         panel.innerHTML = html;
 
-        var themeRow = panel.querySelector('[data-fjn-key="theme"]');
-        themeRow.addEventListener('mouseover', function () { themeRow.style.backgroundColor = FUJIN.navBg; });
-        themeRow.addEventListener('mouseout',  function () { themeRow.style.backgroundColor = ''; });
-        themeRow.addEventListener('click', function () {
-            saveSetting('theme', !loadSetting('theme'));
-            location.reload();
-        });
+        var allRows = panel.querySelectorAll('[data-fjn-key]');
+        var i;
+        for (i = 0; i < allRows.length; i++) {
+            (function (row) {
+                row.addEventListener('mouseover', function () { row.style.backgroundColor = FUJIN.navBg; });
+                row.addEventListener('mouseout',  function () { row.style.backgroundColor = ''; });
+                row.addEventListener('click', function () {
+                    var k = row.getAttribute('data-fjn-key');
+                    saveSetting(k, !loadSetting(k));
+                    location.reload();
+                });
+            }(allRows[i]));
+        }
 
         panel.querySelector('#fjn_close').addEventListener('click', function () {
             panel.style.display = 'none';
@@ -437,10 +490,15 @@
 
     function registerMenuCommands() {
         if (typeof GM_registerMenuCommand !== 'function') { return; }
-        var on = loadSetting('theme');
+        var themeOn = loadSetting('theme');
+        var wsOn    = loadSetting('widescreenLayout');
         GM_registerMenuCommand(
-            (on ? '[ON]  ' : '[OFF] ') + 'Fujin Theme',
+            (themeOn ? '[ON]  ' : '[OFF] ') + 'Fujin Theme',
             function () { saveSetting('theme', !loadSetting('theme')); location.reload(); }
+        );
+        GM_registerMenuCommand(
+            (wsOn ? '[ON]  ' : '[OFF] ') + 'Widescreen Layout',
+            function () { saveSetting('widescreenLayout', !loadSetting('widescreenLayout')); location.reload(); }
         );
     }
 
@@ -453,6 +511,10 @@
 
     window.addEventListener('load', function () {
         if (loadSetting('theme')) { watchStatusframe(); }
+        if (loadSetting('widescreenLayout')) {
+            patchWidescreenLayout();
+            setTimeout(patchWidescreenLayout, 800);
+        }
         injectSettingsButton();
     });
 

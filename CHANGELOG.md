@@ -2,6 +2,24 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.1.0] - 2026-06-08
+### Added
+- `widescreenLayout` toggle (default on): expands the fixed 998px layout to
+  `clamp(998px,80vw,1600px)` -- scales with viewport width up to a 1600px cap,
+  giving ~40-60% more usable width on 1920px+ displays without going edge-to-edge
+- `patchWidescreenLayout()`: removes the `align="center"` HTML attribute from
+  `table.content` (cannot be overridden by CSS), then uses `setProperty(...,'important')`
+  to enforce the clamped width on `.banner1`, `.statusBar`, and `table.content`; pins
+  the sidebar column at 204px to prevent the collapse regression from v3.1.9
+- Second `setTimeout(patchWidescreenLayout, 800)` retry catches any Asus JS that
+  reasserts inline widths after the initial load event
+- Settings panel `rowHTML()` helper: rows are now data-driven so adding future
+  toggles requires only one `rowHTML()` call each
+- Widescreen Layout toggle visible in both the settings panel and the GM menu
+### Changed
+- `buildSettingsPanel()` event loop replaces individual per-row listeners with a
+  single `for` loop over `[data-fjn-key]` elements; behavior identical
+
 ## [4.0.0] - 2026-06-08
 ### Changed
 - Theme-only rebase: stripped all layout customization code out of

@@ -2,6 +2,25 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.0.0] - 2026-06-08
+### Changed
+- Theme-only rebase: stripped all layout customization code out of
+  `asus-merlin-ui.user.js` to focus exclusively on the Fujin theme engine
+- Removed: LAYOUT, buildMenu, waitForMenu, hideMenuItems, getHideIds,
+  makeLogoLink, fixMenuMargin, patchFluidLayout, hideTitleDown,
+  hideNetworkMapCards, injectRouterInfoIntoIframe, the entire client list grid
+  (buildClientGrid, refreshClientGrid, buildClientListPage,
+  injectClientListMenuItem), patchGoToPage, all SETTINGS_DEFAULTS keys except
+  `theme`, PRESET_THEME_ONLY, applyPreset, SETTING_ROWS (full), and the full
+  buildSettingsPanel/registerMenuCommands
+- Settings panel is now minimal: single Fujin Theme on/off toggle
+- `buildFujinCSS()` no longer contains the fluidLayout CSS block
+- Statusframe iframe theming extracted into its own `watchStatusframe()` function
+  (decoupled from the router-info injection that is now in the scratchpad)
+### Added
+- `customizations-scratchpad.js`: all removed code preserved in one reference
+  file with section headers; nothing was deleted, only set aside for later
+
 ## [3.4.0] - 2026-06-08
 ### Changed
 - Full optionality for release: every hidden default element now has its own

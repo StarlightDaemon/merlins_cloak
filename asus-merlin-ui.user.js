@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Asus RT-BE92U - Merlin UI Customizer
-// @namespace    https://github.com/local/asus-merlin-ui
-// @version      3.4.1
-// @description  Hides unwanted menu items, reorders nav, logo home link, firmware info in status panel, Fujin theme injection
+// @name         Asus RT-BE92U - Merlin's Cloak
+// @namespace    https://github.com/StarlightDaemon/merlins_cloak
+// @version      4.0.0
+// @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
 // @match        https://192.168.1.1/*
@@ -18,77 +18,12 @@
     'use strict';
 
     // =========================================================
-    //  HIDE LIST
-    //  Plain object used instead of Set for ES5 compatibility.
-    //  To unhide any item, remove its entry from this object.
-    // =========================================================
-
-    var HIDE_IDS = {
-        'AiProtection_HomeProtection_menu': true,   // AiProtection
-        'AiProtection_WebProtector_menu':   true,   // Parental Controls
-        'APP_Installation_menu':            true,   // USB Application
-        'Advanced_Smart_Home_Alexa_menu':   true,   // Amazon Alexa
-        'QIS_wizard_menu':                  true    // Quick Internet Setup
-    };
-
-    // =========================================================
     //  SETTINGS
-    //  Persisted via GM_setValue when available, localStorage
-    //  otherwise (scoped to 192.168.1.1). All defaults are true.
     // =========================================================
 
     var SETTINGS_DEFAULTS = {
-        theme:            true,
-        fluidLayout:      true,
-        menuReorder:      true,
-        clientList:       true,
-        routerInfo:       true,
-        logoLink:         true,
-        // Header chrome hides
-        hideTitleDownBar: true,
-        hideMerlinLogo:   true,
-        // Home page network-map hides
-        hideViewListBtn:  true,
-        hideUsbCard:      true,
-        hideAimeshCount:  true,
-        // Menu item hides
-        hideAiProtection: true,
-        hideParental:     true,
-        hideUsb:          true,
-        hideAlexa:        true,
-        hideQis:          true
+        theme: true
     };
-
-    // A preset is a full settings object applied in one click via applyPreset().
-    // PRESET_THEME_ONLY = stock Asus layout + Fujin colors only: every layout
-    // customization is off so the theme can be perfected against the default UI.
-    // (Full customization = SETTINGS_DEFAULTS, since all defaults are true.)
-    var PRESET_THEME_ONLY = {
-        theme:            true,
-        fluidLayout:      false,
-        menuReorder:      false,
-        clientList:       false,
-        routerInfo:       false,
-        logoLink:         false,
-        hideTitleDownBar: false,
-        hideMerlinLogo:   false,
-        hideViewListBtn:  false,
-        hideUsbCard:      false,
-        hideAimeshCount:  false,
-        hideAiProtection: false,
-        hideParental:     false,
-        hideUsb:          false,
-        hideAlexa:        false,
-        hideQis:          false
-    };
-
-    function applyPreset(preset) {
-        var k;
-        for (k in preset) {
-            if (preset.hasOwnProperty(k)) { saveSetting(k, preset[k]); }
-        }
-        location.reload();
-    }
 
     function loadSetting(key) {
         var def = SETTINGS_DEFAULTS[key];
@@ -103,51 +38,6 @@
         if (typeof GM_setValue === 'function') { GM_setValue(key, val); return; }
         try { localStorage.setItem('fjn_' + key, JSON.stringify(val)); } catch (e) {}
     }
-
-    function getHideIds() {
-        var ids = {};
-        if (loadSetting('hideAiProtection')) { ids['AiProtection_HomeProtection_menu'] = true; }
-        if (loadSetting('hideParental'))     { ids['AiProtection_WebProtector_menu']   = true; }
-        if (loadSetting('hideUsb'))          { ids['APP_Installation_menu']            = true; }
-        if (loadSetting('hideAlexa'))        { ids['Advanced_Smart_Home_Alexa_menu']   = true; }
-        if (loadSetting('hideQis'))          { ids['QIS_wizard_menu']                  = true; }
-        return ids;
-    }
-
-    // =========================================================
-    //  LAYOUT
-    //  Full menu order. Hidden items kept in logical position
-    //  so removing from HIDE_IDS above restores them correctly.
-    // =========================================================
-
-    var LAYOUT = [
-        { type: 'SEPARATOR', label: 'General' },
-        { type: 'MENU', id: 'index_menu' },                          // Network Map
-        { type: 'MENU', id: 'client_list_menu' },                    // Client List [custom]
-        { type: 'MENU', id: 'AiMesh_menu' },                         // AiMesh
-        { type: 'MENU', id: 'SDN_menu' },                            // Network
-        { type: 'MENU', id: 'AiProtection_HomeProtection_menu' },    // AiProtection [hidden]
-        { type: 'MENU', id: 'AiProtection_WebProtector_menu' },      // Parental Controls [hidden]
-        { type: 'MENU', id: 'AdaptiveQoS_Bandwidth_Monitor_menu' },  // Adaptive QoS
-        { type: 'MENU', id: 'Main_TrafficMonitor_realtime_menu' },   // Traffic Analyzer
-
-        { type: 'SEPARATOR', label: 'Network Settings' },
-        { type: 'MENU', id: 'Advanced_Wireless_Content_menu' },      // Wireless
-        { type: 'MENU', id: 'Advanced_LAN_Content_menu' },           // LAN
-        { type: 'MENU', id: 'Advanced_WAN_Content_menu' },           // WAN
-        { type: 'MENU', id: 'Advanced_IPv6_Content_menu' },          // IPv6
-        { type: 'MENU', id: 'Advanced_VPNStatus_menu' },             // VPN
-        { type: 'MENU', id: 'Advanced_BasicFirewall_Content_menu' }, // Firewall
-
-        { type: 'SEPARATOR', label: 'System Tools' },
-        { type: 'MENU', id: 'Advanced_OperationMode_Content_menu' }, // Administration
-        { type: 'MENU', id: 'Tools_Sysinfo_menu' },                  // System Info
-        { type: 'MENU', id: 'Main_LogStatus_Content_menu' },         // System Log
-        { type: 'MENU', id: 'Main_Analysis_Content_menu' },          // Network Tools
-        { type: 'MENU', id: 'APP_Installation_menu' },               // USB Application [hidden]
-        { type: 'MENU', id: 'Advanced_Smart_Home_Alexa_menu' },      // Amazon Alexa [hidden]
-        { type: 'MENU', id: 'QIS_wizard_menu' }                      // Quick Internet Setup [hidden]
-    ];
 
     // =========================================================
     //  FUJIN TOKEN MAP
@@ -184,7 +74,7 @@
         accentHover:  '#77a5c6',  // .menu:hover (index_style.css)
         accentBtn:    '#09639c',  // .button_gen:hover gradient start (form_style.css)
         accentBright: '#248dff',  // scrollbar thumb (form_style.css)
-        // Connection type badges (client grid)
+        // Connection type badges (reserved for future client grid)
         wired: '#4a9eff',
         ghz24: '#44cc88',
         ghz5:  '#ffaa33',
@@ -197,9 +87,9 @@
     // =========================================================
     //  FUJIN CSS INJECTION
     //  Builds a stylesheet that overrides Merlin's served CSS.
-    //  Uses CSS custom properties defined on :root so the client
-    //  grid's dynamic inline styles can reference --fjn-* vars
-    //  if needed in future iterations.
+    //  Uses CSS custom properties on :root so future work can
+    //  reference --fjn-* vars in dynamic inline styles.
+    //  Direct hex values used where CSS vars don't cross iframes.
     // =========================================================
 
     function buildFujinCSS() {
@@ -232,7 +122,7 @@
             'html::-webkit-scrollbar-track { background-color:var(--fjn-bg-dark) !important; }',
 
             /* Page */
-            'body { background-color:var(--fjn-bg-page) !important; color:var(--fjn-text) !important; min-width:0 !important; }',
+            'body { background-color:var(--fjn-bg-page) !important; color:var(--fjn-text) !important; }',
 
             /* Navigation sidebar */
             '.menu, .menu_blocked {',
@@ -338,12 +228,12 @@
             '  background-image:none !important;',
             '  background-color:var(--fjn-accent-btn) !important;',
             '}',
-            /* Language dropdown (navigation li dt uses same PNG as titledropdownbtn) */
+            /* Language dropdown (uses same PNG as titledropdownbtn) */
             '.navigation li dt { background-image:none !important; background-color:var(--fjn-bg-dark) !important; }',
             '.navigation li dt:hover { background-image:none !important; background-color:var(--fjn-accent-btn) !important; }',
             '.navigation li dd { background-color:var(--fjn-bg-dark) !important; border-bottom:1px solid var(--fjn-border-menu) !important; }',
             '.navigation li dd:hover { background-color:var(--fjn-accent-btn) !important; }',
-            /* Status bar row (midup_bg.png tile) and main content area (middown_bg.png tile) */
+            /* Status bar row and main content area (removes PNG tile backgrounds) */
             '.statusBar, .minup_bg { background-image:none !important; background-color:var(--fjn-bg-dark) !important; }',
             'table.content, .mindown_bg { background-image:none !important; background-color:var(--fjn-bg-page) !important; }',
 
@@ -381,7 +271,7 @@
             '.NM_table { background-color:var(--fjn-content-bg) !important; border-radius:0 !important; }',
             'table.table1px, .table1px th { background-color:var(--fjn-content-bg) !important; border-color:var(--fjn-content-bg) !important; }',
 
-            /* Status panel -- direct hex values, CSS vars do not cross iframe boundaries */
+            /* Status panel -- direct hex because CSS vars do not cross iframe boundaries */
             '.main-block { background:' + FUJIN.bgStatus + ' !important; }',
             '.unit-block { background:' + FUJIN.bgStatus + ' !important; border-radius:0 !important; box-shadow:none !important; color:' + FUJIN.textPrimary + ' !important; }',
             '.division-block { background:' + FUJIN.bgDark + ' !important; color:' + FUJIN.textPrimary + ' !important; border-radius:0 !important; box-shadow:none !important; }',
@@ -413,27 +303,6 @@
             '  -webkit-border-radius:0 !important;',
             '}'
         ];
-        if (loadSetting('fluidLayout')) {
-            _p.push(
-                /* Outer chrome stretches edge-to-edge */
-                'html, body { min-width:0 !important; overflow-x:hidden !important; }',
-                '.banner1 { width:100% !important; max-width:none !important; margin:0 !important; box-sizing:border-box !important; }',
-                '.statusBar, .minup_bg { width:100% !important; max-width:none !important; margin:0 !important; box-sizing:border-box !important; }',
-                /* Main layout table */
-                'table.content { width:100% !important; max-width:none !important; table-layout:fixed !important; margin:0 !important; }',
-                /* Sidebar menu column keeps a fixed width so it never collapses */
-                'table.content > tbody > tr:first-child > td:nth-child(2) { width:200px !important; }',
-                'td.bgarrow { width:auto !important; max-width:none !important; min-width:0 !important; }',
-                /* Home network map: the diagram + status panel are both fixed-geometry.
-                   Center them as a group so the unavoidable whitespace is symmetric. */
-                '.NM_table { width:100% !important; }',
-                '#NM_table_div { width:100% !important; display:flex !important; flex-wrap:wrap !important; justify-content:center !important; align-items:flex-start !important; }',
-                '#NM_table_div > div { float:none !important; width:auto !important; flex:0 0 auto !important; box-sizing:border-box !important; }',
-                '#statusframe { width:320px !important; box-sizing:border-box !important; }',
-                /* Settings pages fill the full width */
-                '.FormTable, .FormTitle { width:100% !important; max-width:none !important; box-sizing:border-box !important; }'
-            );
-        }
         return _p.join('\n');
     }
 
@@ -446,616 +315,33 @@
     }
 
     // =========================================================
-    //  LOGO -> HOME LINK
+    //  STATUSFRAME THEME INJECTION
+    //  The statusframe iframe is same-origin but loads separately.
+    //  Inject the theme into it whenever it (re)loads.
     // =========================================================
 
-    function makeLogoLink() {
-        var img = document.querySelector('img[src*="asustitle"]');
-        if (!img || img.parentElement.tagName === 'A') { return; }
-
-        var anchor = document.createElement('a');
-        anchor.href  = 'index.asp';
-        anchor.title = 'Home';
-        anchor.style.cssText = 'display:block; float:left; line-height:0; border:0;';
-
-        img.parentNode.insertBefore(anchor, img);
-        anchor.appendChild(img);
-    }
-
-    // =========================================================
-    //  MENU MARGIN FIX
-    // =========================================================
-
-    function fixMenuMargin() {
-        var mainMenu = document.getElementById('mainMenu');
-        if (!mainMenu) { return; }
-
-        var firstChild = mainMenu.firstElementChild;
-        if (firstChild) {
-            firstChild.style.setProperty('margin-top', '-141px', 'important');
-        }
-
-        mainMenu.style.setProperty('min-height', '100%', 'important');
-    }
-
-    // =========================================================
-    //  FLUID LAYOUT ENFORCEMENT
-    //  CSS !important alone cannot beat JS-set inline styles.
-    //  setProperty with 'important' flag is the highest priority
-    //  override available and wins over everything.
-    // =========================================================
-
-    function patchFluidLayout() {
-        function sp(el, prop, val) {
-            if (el) { el.style.setProperty(prop, val, 'important'); }
-        }
-        function expand(el) {
-            sp(el, 'width',     '100%');
-            sp(el, 'max-width', 'none');
-            sp(el, 'box-sizing','border-box');
-        }
-
-        // Main layout table. The align="center" HTML attribute and the per-column
-        // width attributes cannot be touched by CSS -- handle them directly here.
-        var ct = document.querySelector('table.content');
-        if (ct) {
-            ct.removeAttribute('align');
-            expand(ct);
-            sp(ct, 'margin', '0');
-            sp(ct, 'table-layout', 'fixed');
-
-            // Three columns: [0] spacer, [1] sidebar menu, [2] content (bgarrow).
-            // Removing each width attribute lets our fixed widths win. The menu
-            // column MUST keep a real width or table-layout:fixed collapses it
-            // to zero (this was the disappearing-sidebar bug).
-            var rows = ct.rows;
-            if (rows && rows[0]) {
-                var cells = rows[0].cells;
-                if (cells[0]) { cells[0].removeAttribute('width'); sp(cells[0], 'width', '0'); }
-                if (cells[1]) { cells[1].removeAttribute('width'); sp(cells[1], 'width', '200px'); }
-                if (cells[2]) { cells[2].removeAttribute('width'); sp(cells[2], 'width', 'auto'); }
-            }
-        }
-
-        // Banner + status bar stretch edge-to-edge (CSS gives them width:998px;margin:auto)
-        var banner = document.querySelector('.banner1');
-        expand(banner);
-        sp(banner, 'margin', '0');
-
-        var sb = document.querySelector('.statusBar');
-        expand(sb);
-        sp(sb, 'margin', '0');
-
-        expand(document.querySelector('.minup_bg'));
-        expand(document.querySelector('td.bgarrow'));
-
-        // Walk every ancestor of table.content up to body, expanding unknown wrappers.
-        if (ct) {
-            var el = ct.parentElement;
-            while (el && el !== document.body) {
-                expand(el);
-                sp(el, 'margin-left',  '0');
-                sp(el, 'margin-right', '0');
-                el = el.parentElement;
-            }
-        }
-
-        // body / html
-        sp(document.body, 'min-width',  '0');
-        sp(document.body, 'overflow-x', 'hidden');
-        sp(document.documentElement, 'min-width', '0');
-
-        // Home network map. #NM_table_div holds two width:50%;float:left children:
-        // the topology diagram and the status panel, both fixed-geometry graphics
-        // that cannot reflow. Center them as a group so whitespace is symmetric.
-        var nmDiv = document.getElementById('NM_table_div');
-        if (nmDiv) {
-            sp(nmDiv, 'width',           '100%');
-            sp(nmDiv, 'display',         'flex');
-            sp(nmDiv, 'flex-wrap',       'wrap');
-            sp(nmDiv, 'justify-content', 'center');
-            sp(nmDiv, 'align-items',     'flex-start');
-            var nmChildren = nmDiv.children;
-            for (var i = 0; i < nmChildren.length; i++) {
-                sp(nmChildren[i], 'float',      'none');
-                sp(nmChildren[i], 'width',      'auto');
-                sp(nmChildren[i], 'flex',       '0 0 auto');
-                sp(nmChildren[i], 'box-sizing', 'border-box');
-            }
-        }
-
-        // Status frame keeps its natural design width (it is fixed-layout too).
+    function watchStatusframe() {
         var sf = document.getElementById('statusframe');
-        sp(sf, 'width',      '320px');
-        sp(sf, 'box-sizing', 'border-box');
-
-        // Settings pages: let form tables fill the content column.
-        var forms = document.querySelectorAll('.FormTable, .FormTitle');
-        for (var j = 0; j < forms.length; j++) {
-            sp(forms[j], 'width',      '100%');
-            sp(forms[j], 'max-width',  'none');
-            sp(forms[j], 'box-sizing', 'border-box');
-        }
-    }
-
-    // =========================================================
-    //  HIDE TITLEDOWN BAR
-    // =========================================================
-
-    function hideTitleDown() {
-        if (loadSetting('hideTitleDownBar')) {
-            var el = document.querySelector('.titledown');
-            if (el) { el.style.setProperty('display', 'none', 'important'); }
-        }
-        if (loadSetting('hideMerlinLogo')) {
-            var merlinImg = document.querySelector('img[src*="merlin-logo"]');
-            if (merlinImg && merlinImg.parentElement) {
-                merlinImg.parentElement.style.setProperty('display', 'none', 'important');
-            }
-        }
-    }
-
-    // =========================================================
-    //  INJECT ROUTER INFO INTO STATUS IFRAME
-    // =========================================================
-
-    function injectRouterInfoIntoIframe() {
-        if (!document.getElementById('statusframe')) { return; }
-
-        var swModeEl  = document.getElementById('sw_mode_span');
-        var firmverEl = document.getElementById('firmver');
-        var swMode    = swModeEl  ? swModeEl.textContent.trim()  : 'Unknown';
-        var firmver   = firmverEl ? firmverEl.textContent.trim() : 'Unknown';
-        var _retries  = 0;
-
+        if (!sf) { return; }
+        var _retries = 0;
         function tryInject() {
             if (_retries++ > 20) { return; }
-            var iframe = document.getElementById('statusframe');
-            if (!iframe) { return; }
-
-            var iDoc = iframe.contentDocument;
-            if (!iDoc || !iDoc.body || !iDoc.querySelector('.unit-block')) {
-                setTimeout(tryInject, 300);
+            var iDoc = sf.contentDocument || (sf.contentWindow && sf.contentWindow.document);
+            if (iDoc && iDoc.body && iDoc.readyState !== 'loading') {
+                injectFujinStyle(iDoc);
                 return;
             }
-
-            if (iDoc.getElementById('router_info_block')) { return; }
-
-            var block = iDoc.createElement('div');
-            block.id        = 'router_info_block';
-            block.className = 'unit-block';
-            block.innerHTML =
-                '<div class="division-block">Router Info</div>' +
-                '<div>' +
-                    '<div class="info-block">' +
-                        '<div class="info-title">Operation Mode</div>' +
-                        '<div class="info-content">' + swMode + '</div>' +
-                    '</div>' +
-                    '<div class="info-block">' +
-                        '<div class="info-title">Firmware</div>' +
-                        '<div class="info-content">' + firmver + '</div>' +
-                    '</div>' +
-                '</div>';
-
-            var mainBlock = iDoc.querySelector('.main-block');
-            if (mainBlock) {
-                mainBlock.appendChild(block);
-            }
-
-            var scrollH = iDoc.body.scrollHeight;
-            iframe.style.height = scrollH + 'px';
-            if (iframe.parentElement) {
-                iframe.parentElement.style.setProperty('height', scrollH + 'px', 'important');
-            }
+            setTimeout(tryInject, 300);
         }
-
-        setTimeout(tryInject, 800);
-
-        var iframe = document.getElementById('statusframe');
-        if (iframe) {
-            iframe.addEventListener('load', function () {
-                injectFujinStyle(iframe.contentDocument);
-                setTimeout(tryInject, 300);
-            });
-        }
-    }
-
-
-    // =========================================================
-    //  CLIENT LIST GRID
-    //  Reads from /update_clients.asp and renders a card grid
-    // =========================================================
-
-    window.buildClientGrid = function buildClientGrid() {
-        var overlay = document.getElementById('clientgrid_overlay');
-        if (overlay) {
-            overlay.style.setProperty('display', 'block', 'important');
-            refreshClientGrid();
-            return;
-        }
-
-        overlay = document.createElement('div');
-        overlay.id = 'clientgrid_overlay';
-        overlay.style.cssText = [
-            'position:relative',
-            'background:' + FUJIN.bgPage,
-            'z-index:50',
-            'display:block',
-            'overflow-y:auto',
-            'min-height:700px',
-            'font-family:' + FUJIN.fontBase,
-            'width:100%'
-        ].join(';');
-
-        overlay.innerHTML = [
-            '<div style="padding:16px;">',
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">',
-            '<div style="display:flex;gap:8px;" id="cg_tabs">',
-            '<button onclick="window._cgTab(this,\'all\')" style="background:' + FUJIN.contentBg + ';color:' + FUJIN.textPrimary + ';border:0;padding:6px 14px;cursor:pointer;font-size:12px;">All</button>',
-            '<button onclick="window._cgTab(this,\'wired\')" style="background:' + FUJIN.bgTitle + ';color:' + FUJIN.textSecondary + ';border:0;padding:6px 14px;cursor:pointer;font-size:12px;">Wired</button>',
-            '<button onclick="window._cgTab(this,\'wireless\')" style="background:' + FUJIN.bgTitle + ';color:' + FUJIN.textSecondary + ';border:0;padding:6px 14px;cursor:pointer;font-size:12px;">Wireless</button>',
-            '<button onclick="window._cgTab(this,\'offline\')" style="background:' + FUJIN.bgTitle + ';color:' + FUJIN.textSecondary + ';border:0;padding:6px 14px;cursor:pointer;font-size:12px;">Offline</button>',
-            '</div>',
-            '<div style="display:flex;align-items:center;gap:8px;">',
-            '<input id="cg_search" onkeyup="window._cgSearch(this.value)" placeholder="Search..." style="background:' + FUJIN.bgTitle + ';color:' + FUJIN.textPrimary + ';border:1px solid ' + FUJIN.contentBg + ';padding:6px 10px;font-size:12px;width:200px;">',
-            '<button onclick="window.refreshClientGrid()" style="background:' + FUJIN.bgTitle + ';color:' + FUJIN.textSecondary + ';border:0;padding:6px 14px;cursor:pointer;font-size:12px;">Refresh</button>',
-            '</div>',
-            '</div>',
-            '<div id="cg_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;"></div>',
-            '<div id="cg_loading" style="color:' + FUJIN.textSecondary + ';text-align:center;padding:40px;">Loading clients...</div>',
-            '</div>'
-        ].join('');
-
-        var contentTd = document.querySelector('td.bgarrow');
-        if (contentTd) {
-            contentTd.appendChild(overlay);
-        }
-
-        window._cgAllClients = [];
-        window._cgCurrentTab = 'all';
-
-        window._cgTab = function(btn, tab) {
-            window._cgCurrentTab = tab;
-            var btns = document.querySelectorAll('#cg_tabs button');
-            for (var i = 0; i < btns.length; i++) {
-                btns[i].style.background = FUJIN.bgTitle;
-                btns[i].style.color = FUJIN.textSecondary;
-            }
-            btn.style.background = FUJIN.contentBg;
-            btn.style.color = FUJIN.textPrimary;
-            window._cgRender(window._cgAllClients);
-        };
-
-        window._cgSearch = function(val) {
-            window._cgRender(window._cgAllClients, val);
-        };
-
-        window._cgRender = function(clients, search) {
-            var grid = document.getElementById('cg_grid');
-            if (!grid) { return; }
-            var tab = window._cgCurrentTab;
-            var q = (search || document.getElementById('cg_search').value || '').toLowerCase();
-
-            var filtered = [];
-            for (var i = 0; i < clients.length; i++) {
-                var c = clients[i];
-                if (tab === 'offline') {
-                    if (c.isOnline) { continue; }
-                } else {
-                    if (!c.isOnline) { continue; }
-                    if (tab === 'wired' && c.isWL !== '0') { continue; }
-                    if (tab === 'wireless' && c.isWL === '0') { continue; }
-                }
-                if (q) {
-                    var match = (c.nickName || '').toLowerCase().indexOf(q) > -1 ||
-                                (c.ip || '').indexOf(q) > -1 ||
-                                (c.mac || '').toLowerCase().indexOf(q) > -1 ||
-                                (c.vendor || '').toLowerCase().indexOf(q) > -1;
-                    if (!match) { continue; }
-                }
-                filtered.push(c);
-            }
-
-            filtered.sort(function(a, b) {
-                var aparts = (a.ip || '').split('.').map(Number);
-                var bparts = (b.ip || '').split('.').map(Number);
-                for (var j = 0; j < 4; j++) {
-                    if (aparts[j] !== bparts[j]) { return aparts[j] - bparts[j]; }
-                }
-                return 0;
-            });
-
-            var connLabel = { '0': 'Wired', '1': '2.4G', '2': '5G', '3': '6G' };
-            var connColor = { '0': FUJIN.wired, '1': FUJIN.ghz24, '2': FUJIN.ghz5, '3': FUJIN.ghz6 };
-
-            var html = '';
-            for (var k = 0; k < filtered.length; k++) {
-                var cl = filtered[k];
-                if (tab === 'offline') {
-                    html += '<div style="background:' + FUJIN.bgStatus + ';padding:12px;border:1px solid ' + FUJIN.borderCard + ';opacity:0.5;">' +
-                        '<div style="margin-bottom:8px;">' +
-                        '<div style="font-weight:bold;color:' + FUJIN.textPrimary + ';font-size:13px;word-break:break-word;">' + (cl.nickName || cl.name || cl.mac) + '</div>' +
-                        '</div>' +
-                        '<div style="font-size:12px;color:' + FUJIN.textMuted + ';margin-bottom:3px;">' + (cl.ip || '') + '</div>' +
-                        '<div style="font-size:10px;color:' + FUJIN.textMuted + ';font-family:' + FUJIN.fontMono + ';">' + (cl.mac || '') + '</div>' +
-                        (cl.vendor ? '<div style="font-size:10px;color:' + FUJIN.textMuted + ';margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + cl.vendor + '">' + cl.vendor + '</div>' : '') +
-                        '</div>';
-                } else {
-                    var conn = cl.isWL || '0';
-                    var label = connLabel[conn] || 'Wired';
-                    var color = connColor[conn] || FUJIN.wired;
-                    html += '<div style="background:' + FUJIN.bgStatus + ';padding:12px;border:1px solid ' + FUJIN.borderCard + ';">' +
-                        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">' +
-                        '<div style="font-weight:bold;color:' + FUJIN.textPrimary + ';font-size:13px;word-break:break-word;flex:1;">' + (cl.nickName || cl.name || cl.mac) + '</div>' +
-                        '<div style="background:' + color + ';color:#000;font-size:10px;font-weight:bold;padding:2px 6px;margin-left:6px;white-space:nowrap;">' + label + '</div>' +
-                        '</div>' +
-                        '<div style="font-size:12px;color:' + FUJIN.textLink + ';margin-bottom:3px;">' + (cl.ip || '') + '</div>' +
-                        '<div style="font-size:10px;color:' + FUJIN.textSecondary + ';font-family:' + FUJIN.fontMono + ';">' + (cl.mac || '') + '</div>' +
-                        (cl.vendor ? '<div style="font-size:10px;color:' + FUJIN.textMuted + ';margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + cl.vendor + '">' + cl.vendor + '</div>' : '') +
-                        '</div>';
-                }
-            }
-
-            grid.innerHTML = html || '<div style="color:' + FUJIN.textSecondary + ';padding:20px;grid-column:1/-1;">No devices found</div>';
-        };
-
-        window.refreshClientGrid();
-    };
-
-    window.refreshClientGrid = function refreshClientGrid() {
-        var loading = document.getElementById('cg_loading');
-        if (loading) { loading.style.display = 'block'; }
-
-        var script = document.createElement('script');
-        script.src = '/update_clients.asp?t=' + Date.now();
-        script.onload = function() {
-            if (loading) { loading.style.display = 'none'; }
-            try {
-                var clients = [];
-                if (typeof originData !== 'undefined' && originData.fromNetworkmapd && originData.fromNetworkmapd.length) {
-                    var arr = originData.fromNetworkmapd;
-                    for (var i = 0; i < arr.length; i++) {
-                        var obj = arr[i];
-                        var keys = Object.keys(obj);
-                        for (var j = 0; j < keys.length; j++) {
-                            clients.push(obj[keys[j]]);
-                        }
-                    }
-                }
-                window._cgAllClients = clients;
-                window._cgRender(clients);
-            } catch(e) {
-                console.log('clientgrid error:', e);
-            }
-            document.head.removeChild(script);
-        };
-        document.head.appendChild(script);
-    };
-
-    // =========================================================
-    //  INJECT CLIENT LIST MENU ITEM
-    // =========================================================
-
-    function injectClientListMenuItem() {
-        if (document.getElementById('client_list_menu')) { return; }
-
-        var item = document.createElement('div');
-        item.className = 'menu';
-        item.id = 'client_list_menu';
-        item.setAttribute('title', 'clientgrid');
-        item.setAttribute('onclick',
-            '(function(){' +
-            'var els = document.querySelectorAll(".menu");' +
-            'for(var i=0;i<els.length;i++){ els[i].className="menu"; }' +
-            'this.className="menu menuClicked";' +
-            'var contentTd = document.querySelector("td.bgarrow");' +
-            'if(!contentTd){ return; }' +
-            'var children = contentTd.children;' +
-            'for(var j=0;j<children.length;j++){' +
-            '  if(children[j].id !== "clientgrid_overlay"){' +
-            '    children[j].style.setProperty("display","none","important");' +
-            '  }' +
-            '}' +
-            'var statusBar = document.querySelector(".statusBar");' +
-            'if(statusBar){ statusBar.style.setProperty("display","none","important"); }' +
-            'window.buildClientGrid();' +
-            '}).call(this);'
-        );
-        item.innerHTML =
-            '<table><tbody><tr>' +
-            '<td><div class="menu_Icon menu_Index"></div></td>' +
-            '<td class="menu_Desc">Client List</td>' +
-            '</tr></tbody></table>';
-
-        var indexMenu = document.getElementById('index_menu');
-        if (indexMenu && indexMenu.parentNode) {
-            indexMenu.parentNode.insertBefore(item, indexMenu.nextSibling);
-        }
-    }
-
-    // =========================================================
-    //  HIDE NETWORK MAP CARDS
-    // =========================================================
-
-    function hideNetworkMapCards() {
-        var isIndex = window.location.pathname.indexOf('index.asp') > -1 ||
-                      window.location.pathname === '/';
-        if (!isIndex) { return; }
-
-        if (loadSetting('hideViewListBtn')) {
-            var viewList = document.querySelector('input[value="View List"]');
-            if (viewList && viewList.parentElement) {
-                viewList.parentElement.style.setProperty('display', 'none', 'important');
-            }
-        }
-
-        if (loadSetting('hideUsbCard')) {
-            var usbStatus = document.getElementById('usb_status');
-            if (usbStatus && usbStatus.parentElement) {
-                usbStatus.parentElement.style.setProperty('display', 'none', 'important');
-            }
-        }
-
-        if (loadSetting('hideAimeshCount')) {
-            var aimeshNodes = document.querySelectorAll('.aimesh_node, #aimesh_node_status, [id*="aimesh_num"]');
-            for (var ai = 0; ai < aimeshNodes.length; ai++) {
-                aimeshNodes[ai].style.setProperty('display', 'none', 'important');
-            }
-        }
-    }
-
-    // =========================================================
-    //  HIDE
-    // =========================================================
-
-    function hideMenuItems() {
-        var ids = getHideIds();
-        var id;
-        for (id in ids) {
-            if (ids.hasOwnProperty(id)) {
-                var el = document.getElementById(id);
-                if (el) { el.style.setProperty('display', 'none', 'important'); }
-            }
-        }
-    }
-
-    // =========================================================
-    //  REORDER + REGROUP
-    // =========================================================
-
-    function buildMenu() {
-        var mainMenu = document.getElementById('mainMenu');
-        if (!mainMenu) { return; }
-
-        if (mainMenu.getAttribute('data-customized') === '1') {
-            hideMenuItems();
-            return;
-        }
-
-        var existing = {};
-        var nodes = mainMenu.querySelectorAll('div.menu, div.menu_Split');
-        var i;
-        for (i = 0; i < nodes.length; i++) {
-            if (nodes[i].id) { existing[nodes[i].id] = nodes[i]; }
-        }
-
-        if (!existing['index_menu']) { return; }
-
-        var fragment = document.createDocumentFragment();
-
-        for (i = 0; i < LAYOUT.length; i++) {
-            var entry = LAYOUT[i];
-            if (entry.type === 'SEPARATOR') {
-                var sep = document.createElement('div');
-                sep.className = 'menu_Split';
-                sep.innerHTML =
-                    '<table width="192px" height="30px"><tbody><tr><td>' +
-                    entry.label +
-                    '</td></tr></tbody></table>';
-                fragment.appendChild(sep);
-
-            } else if (entry.type === 'MENU') {
-                var el = existing[entry.id];
-                if (el) {
-                    fragment.appendChild(el);
-                    delete existing[entry.id];
-                }
-            }
-        }
-
-        var key;
-        for (key in existing) {
-            if (existing.hasOwnProperty(key)) {
-                if (!existing[key].classList.contains('menu_Split')) {
-                    fragment.appendChild(existing[key]);
-                }
-            }
-        }
-
-        mainMenu.innerHTML = '';
-        mainMenu.appendChild(fragment);
-        mainMenu.setAttribute('data-customized', '1');
-
-        hideMenuItems();
-        fixMenuMargin();
-    }
-
-    // =========================================================
-    //  RESTORE NETWORK MAP
-    //  When navigating away from Client List view, restore
-    //  the original content TD children
-    // =========================================================
-
-    function patchGoToPage() {
-        if (typeof goToPage !== 'function') { return; }
-        if (goToPage._patched) { return; }
-
-        var _goToPage = goToPage;
-        goToPage = function(menu, tab, obj) {
-            var clf = document.getElementById('clientgrid_overlay');
-            if (clf) {
-                clf.style.setProperty('display', 'none', 'important');
-                var statusBar = document.querySelector('.statusBar');
-                if (statusBar) {
-                    statusBar.style.removeProperty('display');
-                    statusBar.style.removeProperty('visibility');
-                }
-                var contentTd = document.querySelector('td.bgarrow');
-                if (contentTd) {
-                    var children = contentTd.children;
-                    for (var i = 0; i < children.length; i++) {
-                        if (children[i].id !== 'clientgrid_overlay') {
-                            children[i].style.removeProperty('display');
-                        }
-                    }
-                }
-            }
-            return _goToPage(menu, tab, obj);
-        };
-        goToPage._patched = true;
-    }
-
-    // =========================================================
-    //  OBSERVER
-    // =========================================================
-
-    function waitForMenu() {
-        var mainMenu = document.getElementById('mainMenu');
-
-        if (!mainMenu) {
-            if (!document.body) { return; }
-            var bodyObs = new MutationObserver(function () {
-                var m = document.getElementById('mainMenu');
-                if (m) {
-                    bodyObs.disconnect();
-                    waitForMenu();
-                }
-            });
-            if (document.body) {
-                bodyObs.observe(document.body, { childList: true, subtree: false });
-            }
-            return;
-        }
-
-        var menuObs = new MutationObserver(function (mutations, obs) {
-            if (document.getElementById('index_menu')) {
-                obs.disconnect();
-                if (loadSetting('clientList')) { injectClientListMenuItem(); }
-                if (loadSetting('menuReorder')) { buildMenu(); } else { hideMenuItems(); }
-            }
+        sf.addEventListener('load', function () {
+            _retries = 0;
+            tryInject();
         });
-
-        menuObs.observe(mainMenu, { childList: true, subtree: true });
-
-        if (document.getElementById('index_menu')) {
-            menuObs.disconnect();
-            if (loadSetting('clientList')) { injectClientListMenuItem(); }
-            if (loadSetting('menuReorder')) { buildMenu(); } else { hideMenuItems(); }
-        }
+        tryInject();
     }
 
     // =========================================================
-    //  SETTINGS PANEL + GM MENU
+    //  SETTINGS BUTTON + PANEL
     // =========================================================
 
     var _panelOutsideHandler = null;
@@ -1077,28 +363,6 @@
         }, 0);
     }
 
-    var SETTING_ROWS = [
-        { key: 'theme',            label: 'Fujin Theme' },
-        { key: 'fluidLayout',      label: 'Fluid Layout' },
-        { key: 'menuReorder',      label: 'Menu Reorder' },
-        { key: 'clientList',       label: 'Client List Item' },
-        { key: 'routerInfo',       label: 'Router Info Panel' },
-        { key: 'logoLink',         label: 'Logo Home Link' },
-        { key: null,               label: 'Hide: Header' },
-        { key: 'hideTitleDownBar', label: 'Titledown Bar' },
-        { key: 'hideMerlinLogo',   label: 'Merlin Logo' },
-        { key: null,               label: 'Hide: Home Page' },
-        { key: 'hideViewListBtn',  label: 'View List Button' },
-        { key: 'hideUsbCard',      label: 'USB Card' },
-        { key: 'hideAimeshCount',  label: 'AiMesh Node Count' },
-        { key: null,               label: 'Hide: Menu Items' },
-        { key: 'hideAiProtection', label: 'AiProtection' },
-        { key: 'hideParental',     label: 'Parental Controls' },
-        { key: 'hideUsb',          label: 'USB Application' },
-        { key: 'hideAlexa',        label: 'Amazon Alexa' },
-        { key: 'hideQis',          label: 'Quick Internet Setup' }
-    ];
-
     function buildSettingsPanel() {
         var panel = document.getElementById('fjn_settings_panel');
         if (panel) {
@@ -1116,86 +380,39 @@
         panel.style.cssText = 'position:fixed;top:60px;right:12px;z-index:99999;' +
             'background:' + FUJIN.bgDark + ';' +
             'border:1px solid ' + FUJIN.borderMenu + ';' +
-            'min-width:230px;font-family:' + FUJIN.fontBase + ';' +
+            'min-width:220px;font-family:' + FUJIN.fontBase + ';' +
             'font-size:13px;color:' + FUJIN.textPrimary + ';' +
             'box-shadow:0 4px 16px rgba(0,0,0,0.5);';
 
-        var html = '<div style="background:' + FUJIN.bgTitle + ';padding:8px 12px;' +
+        var themeOn = loadSetting('theme');
+        var html =
+            '<div style="background:' + FUJIN.bgTitle + ';padding:8px 12px;' +
             'display:flex;justify-content:space-between;align-items:center;">' +
             '<span style="font-weight:bold;">Merlin\'s Cloak</span>' +
             '<span id="fjn_close" style="cursor:pointer;padding:0 4px;' +
             'color:' + FUJIN.textSecondary + ';">x</span>' +
+            '</div>' +
+            '<div data-fjn-key="theme" style="padding:7px 12px;cursor:pointer;' +
+            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
+            'display:flex;justify-content:space-between;align-items:center;">' +
+            '<span>Fujin Theme</span>' +
+            '<span style="font-size:11px;margin-left:12px;color:' +
+            (themeOn ? FUJIN.ghz24 : FUJIN.textMuted) + ';">' +
+            (themeOn ? '[ON]' : '[OFF]') + '</span>' +
             '</div>';
-
-        for (var i = 0; i < SETTING_ROWS.length; i++) {
-            var row = SETTING_ROWS[i];
-            if (row.key === null) {
-                html += '<div style="padding:4px 12px;font-size:11px;' +
-                    'color:' + FUJIN.textMuted + ';' +
-                    'border-top:1px solid ' + FUJIN.borderDark + ';' +
-                    'margin-top:4px;">' + row.label + '</div>';
-            } else {
-                var on = loadSetting(row.key);
-                html += '<div data-fjn-key="' + row.key + '" style="padding:7px 12px;cursor:pointer;' +
-                    'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
-                    'display:flex;justify-content:space-between;align-items:center;">' +
-                    '<span>' + row.label + '</span>' +
-                    '<span style="font-size:11px;margin-left:12px;color:' +
-                    (on ? FUJIN.ghz24 : FUJIN.textMuted) + ';">' +
-                    (on ? '[ON]' : '[OFF]') + '</span>' +
-                    '</div>';
-            }
-        }
-
-        html += '<div style="padding:4px 12px;font-size:11px;' +
-            'color:' + FUJIN.textMuted + ';' +
-            'border-top:1px solid ' + FUJIN.borderMenu + ';margin-top:4px;">Presets</div>';
-        html += '<div id="fjn_preset_theme" style="padding:7px 12px;cursor:pointer;' +
-            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
-            'color:' + FUJIN.textLink + ';">Theme only (stock layout)</div>';
-        html += '<div id="fjn_preset_full" style="padding:7px 12px;cursor:pointer;' +
-            'border-bottom:1px solid ' + FUJIN.borderDark + ';' +
-            'color:' + FUJIN.textLink + ';">Full customization</div>';
-
-        html += '<div id="fjn_reset" style="padding:7px 12px;cursor:pointer;' +
-            'text-align:center;color:' + FUJIN.textHint + ';' +
-            'border-top:1px solid ' + FUJIN.borderMenu + ';">Reset to defaults</div>';
 
         panel.innerHTML = html;
 
-        var toggleRows = panel.querySelectorAll('[data-fjn-key]');
-        for (var j = 0; j < toggleRows.length; j++) {
-            (function (rowEl) {
-                rowEl.addEventListener('mouseover', function () { rowEl.style.backgroundColor = FUJIN.navBg; });
-                rowEl.addEventListener('mouseout',  function () { rowEl.style.backgroundColor = ''; });
-                rowEl.addEventListener('click', function () {
-                    var k = rowEl.getAttribute('data-fjn-key');
-                    saveSetting(k, !loadSetting(k));
-                    location.reload();
-                });
-            })(toggleRows[j]);
-        }
+        var themeRow = panel.querySelector('[data-fjn-key="theme"]');
+        themeRow.addEventListener('mouseover', function () { themeRow.style.backgroundColor = FUJIN.navBg; });
+        themeRow.addEventListener('mouseout',  function () { themeRow.style.backgroundColor = ''; });
+        themeRow.addEventListener('click', function () {
+            saveSetting('theme', !loadSetting('theme'));
+            location.reload();
+        });
 
         panel.querySelector('#fjn_close').addEventListener('click', function () {
             panel.style.display = 'none';
-        });
-
-        var presetTheme = panel.querySelector('#fjn_preset_theme');
-        presetTheme.addEventListener('mouseover', function () { presetTheme.style.backgroundColor = FUJIN.navBg; });
-        presetTheme.addEventListener('mouseout',  function () { presetTheme.style.backgroundColor = ''; });
-        presetTheme.addEventListener('click', function () { applyPreset(PRESET_THEME_ONLY); });
-
-        var presetFull = panel.querySelector('#fjn_preset_full');
-        presetFull.addEventListener('mouseover', function () { presetFull.style.backgroundColor = FUJIN.navBg; });
-        presetFull.addEventListener('mouseout',  function () { presetFull.style.backgroundColor = ''; });
-        presetFull.addEventListener('click', function () { applyPreset(SETTINGS_DEFAULTS); });
-
-        panel.querySelector('#fjn_reset').addEventListener('click', function () {
-            var k;
-            for (k in SETTINGS_DEFAULTS) {
-                if (SETTINGS_DEFAULTS.hasOwnProperty(k)) { saveSetting(k, SETTINGS_DEFAULTS[k]); }
-            }
-            location.reload();
         });
 
         document.body.appendChild(panel);
@@ -1220,55 +437,22 @@
 
     function registerMenuCommands() {
         if (typeof GM_registerMenuCommand !== 'function') { return; }
-        for (var i = 0; i < SETTING_ROWS.length; i++) {
-            (function (row) {
-                if (row.key === null) { return; }
-                var on = loadSetting(row.key);
-                GM_registerMenuCommand(
-                    (on ? '[ON]  ' : '[OFF] ') + row.label,
-                    function () { saveSetting(row.key, !loadSetting(row.key)); location.reload(); }
-                );
-            })(SETTING_ROWS[i]);
-        }
-        GM_registerMenuCommand('Reset to defaults', function () {
-            var k;
-            for (k in SETTINGS_DEFAULTS) {
-                if (SETTINGS_DEFAULTS.hasOwnProperty(k)) { saveSetting(k, SETTINGS_DEFAULTS[k]); }
-            }
-            location.reload();
-        });
+        var on = loadSetting('theme');
+        GM_registerMenuCommand(
+            (on ? '[ON]  ' : '[OFF] ') + 'Fujin Theme',
+            function () { saveSetting('theme', !loadSetting('theme')); location.reload(); }
+        );
     }
 
     // =========================================================
     //  INIT
     // =========================================================
 
-    if (loadSetting('theme'))      { injectFujinStyle(document); }
-    if (loadSetting('logoLink'))   { makeLogoLink(); }
-    hideTitleDown();               // self-gates per element (hideTitleDownBar / hideMerlinLogo)
-    waitForMenu();
-    if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
+    if (loadSetting('theme')) { injectFujinStyle(document); }
     registerMenuCommands();
 
     window.addEventListener('load', function () {
-        if (loadSetting('logoLink'))   { makeLogoLink(); }
-        hideTitleDown();           // self-gates per element
-        if (loadSetting('routerInfo')) { injectRouterInfoIntoIframe(); }
-        hideNetworkMapCards();     // self-gates per element (hideViewListBtn / hideUsbCard / hideAimeshCount)
-        if (loadSetting('clientList')) { patchGoToPage(); }
-        if (loadSetting('fluidLayout')) {
-            patchFluidLayout();
-            setTimeout(patchFluidLayout, 500);
-            setTimeout(patchFluidLayout, 1500);
-        }
-        if (loadSetting('menuReorder')) {
-            setTimeout(buildMenu, 500);
-            setTimeout(buildMenu, 1500);
-        } else {
-            setTimeout(hideMenuItems, 500);
-        }
-        setTimeout(hideNetworkMapCards, 1500);
-        setTimeout(hideNetworkMapCards, 3000);
+        if (loadSetting('theme')) { watchStatusframe(); }
         injectSettingsButton();
     });
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.1.0
+// @version      4.1.1
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -304,6 +304,32 @@
             '  -webkit-border-radius:0 !important;',
             '}'
         ];
+
+        /* Widescreen layout -- CSS !important beats Asus regular inline styles and
+           is timing-independent. JS setProperty runs on top as a belt-and-suspenders
+           override for any element Asus JS touches after document-end. */
+        if (loadSetting('widescreenLayout')) {
+            _p.push(
+                '.banner1 {',
+                '  width:clamp(998px,80vw,1600px) !important;',
+                '  margin-left:auto !important; margin-right:auto !important;',
+                '  box-sizing:border-box !important;',
+                '}',
+                '.statusBar,.minup_bg {',
+                '  width:clamp(998px,80vw,1600px) !important;',
+                '  margin-left:auto !important; margin-right:auto !important;',
+                '  box-sizing:border-box !important;',
+                '}',
+                'table.content {',
+                '  width:clamp(998px,80vw,1600px) !important;',
+                '  margin-left:auto !important; margin-right:auto !important;',
+                '  box-sizing:border-box !important;',
+                '}',
+                /* Content column expands to fill whatever width the table gains */
+                'td.bgarrow { width:auto !important; max-width:none !important; }'
+            );
+        }
+
         return _p.join('\n');
     }
 
@@ -351,6 +377,13 @@
             if (rows && rows[0] && rows[0].cells && rows[0].cells[1]) {
                 rows[0].cells[1].style.setProperty('width', '204px', 'important');
             }
+        }
+
+        /* Content column -- must expand or table width gain goes nowhere */
+        var ca = document.querySelector('td.bgarrow');
+        if (ca) {
+            ca.style.setProperty('width', 'auto', 'important');
+            ca.style.setProperty('max-width', 'none', 'important');
         }
     }
 
@@ -513,7 +546,10 @@
         if (loadSetting('theme')) { watchStatusframe(); }
         if (loadSetting('widescreenLayout')) {
             patchWidescreenLayout();
+            setTimeout(patchWidescreenLayout, 300);
             setTimeout(patchWidescreenLayout, 800);
+            setTimeout(patchWidescreenLayout, 1500);
+            setTimeout(patchWidescreenLayout, 3000);
         }
         injectSettingsButton();
     });

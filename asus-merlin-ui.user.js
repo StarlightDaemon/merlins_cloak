@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.5
+// @version      4.4.6
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -487,6 +487,7 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
+                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
                 var spacerTd = row.cells && row.cells[0];
                 if (spacerTd && spacerTd.getAttribute('rowspan')) { hide(spacerTd); }
@@ -511,6 +512,7 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
+                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
             } else if (i === 3) {
                 // Branch row: replace split-PNG with a simple horizontal connector
@@ -570,16 +572,36 @@
             }
         }
 
+        var clientsTd = document.getElementById('clients_td');
+        if (clientsTd) {
+            sp(clientsTd, 'display', 'flex');
+            sp(clientsTd, 'flex-direction', 'column');
+            sp(clientsTd, 'align-items', 'center');
+            sp(clientsTd, 'text-align', 'center');
+            sp(clientsTd, 'padding', '12px 8px');
+            sp(clientsTd, 'box-sizing', 'border-box');
+        }
+        // ameshContainer is populated dynamically; style it now so the
+        // border-top separator is waiting when the content arrives.
+        var ameshCont = document.getElementById('ameshContainer');
+        if (ameshCont) {
+            sp(ameshCont, 'width', '100%');
+            sp(ameshCont, 'text-align', 'center');
+            sp(ameshCont, 'border-top', '1px solid ' + FUJIN.borderMenu);
+            sp(ameshCont, 'padding-top', '10px');
+            sp(ameshCont, 'margin-top', '8px');
+        }
         var usbTd = document.getElementById('usb_td');
         if (usbTd) {
             sp(usbTd, 'min-height', '0');
-            sp(usbTd, 'text-align', 'center');
+            sp(usbTd, 'display', 'flex');
+            sp(usbTd, 'flex-direction', 'column');
             sp(usbTd, 'align-items', 'center');
-        }
-        var clientsTd = document.getElementById('clients_td');
-        if (clientsTd) {
-            sp(clientsTd, 'text-align', 'center');
-            sp(clientsTd, 'align-items', 'center');
+            sp(usbTd, 'justify-content', 'center');
+            sp(usbTd, 'text-align', 'center');
+            sp(usbTd, 'padding', '12px 8px');
+            sp(usbTd, 'box-sizing', 'border-box');
+            sp(usbTd, 'border-top', '1px solid ' + FUJIN.borderMenu);
         }
     }
 

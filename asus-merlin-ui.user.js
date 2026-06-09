@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.1.1
+// @version      4.2.0
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -310,18 +310,12 @@
            override for any element Asus JS touches after document-end. */
         if (loadSetting('widescreenLayout')) {
             _p.push(
-                '.banner1 {',
-                '  width:clamp(998px,80vw,1600px) !important;',
-                '  margin-left:auto !important; margin-right:auto !important;',
-                '  box-sizing:border-box !important;',
-                '}',
-                '.statusBar,.minup_bg {',
-                '  width:clamp(998px,80vw,1600px) !important;',
-                '  margin-left:auto !important; margin-right:auto !important;',
-                '  box-sizing:border-box !important;',
-                '}',
-                'table.content {',
-                '  width:clamp(998px,80vw,1600px) !important;',
+                /* Target width = clamp(998px,80vw,1600px) via min/width/max so a
+                   parser that rejects clamp() does not drop the whole declaration. */
+                '.banner1, .statusBar, .minup_bg, table.content {',
+                '  width:80vw !important;',
+                '  min-width:998px !important;',
+                '  max-width:1600px !important;',
                 '  margin-left:auto !important; margin-right:auto !important;',
                 '  box-sizing:border-box !important;',
                 '}',
@@ -350,40 +344,74 @@
     // =========================================================
 
     function patchWidescreenLayout() {
-        var W = 'clamp(998px,80vw,1600px)';
-
-        var banner = document.querySelector('.banner1');
-        if (banner) {
-            banner.style.setProperty('width', W, 'important');
-            banner.style.setProperty('margin-left', 'auto', 'important');
-            banner.style.setProperty('margin-right', 'auto', 'important');
+        function sp(el, prop, val) {
+            if (el) { el.style.setProperty(prop, val, 'important'); }
+        }
+        // Target width = clamp(998px,80vw,1600px) expressed as min/width/max so
+        // it survives any parser that chokes on clamp().
+        function widen(el) {
+            if (!el) { return; }
+            sp(el, 'width', '80vw');
+            sp(el, 'min-width', '998px');
+            sp(el, 'max-width', '1600px');
+            sp(el, 'margin-left', 'auto');
+            sp(el, 'margin-right', 'auto');
+            sp(el, 'box-sizing', 'border-box');
         }
 
-        var sb = document.querySelector('.statusBar');
-        if (!sb) { sb = document.querySelector('.minup_bg'); }
-        if (sb) {
-            sb.style.setProperty('width', W, 'important');
-            sb.style.setProperty('margin-left', 'auto', 'important');
-            sb.style.setProperty('margin-right', 'auto', 'important');
-        }
+        widen(document.querySelector('.banner1'));
+        widen(document.querySelector('.statusBar'));
+        widen(document.querySelector('.minup_bg'));
 
         var ct = document.querySelector('table.content');
         if (ct) {
             ct.removeAttribute('align');
-            ct.style.setProperty('width', W, 'important');
-            ct.style.setProperty('margin-left', 'auto', 'important');
-            ct.style.setProperty('margin-right', 'auto', 'important');
+            widen(ct);
             var rows = ct.rows;
-            if (rows && rows[0] && rows[0].cells && rows[0].cells[1]) {
-                rows[0].cells[1].style.setProperty('width', '204px', 'important');
+            if (rows && rows[0] && rows[0].cells) {
+                var cells = rows[0].cells;
+                if (cells[1]) { cells[1].removeAttribute('width'); sp(cells[1], 'width', '204px'); }
+                if (cells[2]) { cells[2].removeAttribute('width'); sp(cells[2], 'width', 'auto'); sp(cells[2], 'max-width', 'none'); }
+            }
+
+            // Walk every ancestor up to body: a wrapper div between table.content
+            // and body is the usual 998px constraint. Make wrappers full-width so
+            // the clamped table can center inside them.
+            var el = ct.parentElement;
+            while (el && el !== document.body && el !== document.documentElement) {
+                sp(el, 'width', '100%');
+                sp(el, 'max-width', 'none');
+                sp(el, 'min-width', '0');
+                sp(el, 'margin-left', '0');
+                sp(el, 'margin-right', '0');
+                sp(el, 'box-sizing', 'border-box');
+                el = el.parentElement;
             }
         }
 
-        /* Content column -- must expand or table width gain goes nowhere */
-        var ca = document.querySelector('td.bgarrow');
-        if (ca) {
-            ca.style.setProperty('width', 'auto', 'important');
-            ca.style.setProperty('max-width', 'none', 'important');
+        sp(document.body, 'min-width', '0');
+        sp(document.documentElement, 'min-width', '0');
+
+        // Home network map is fixed-geometry (hardcoded cell sizes, bgcolor cells,
+        // pixel-positioned connectors) and cannot reflow. Spread its two halves
+        // (topology diagram + System Status panel) across the widened column with
+        // space-evenly so they use the new width instead of piling left with a
+        // dark gap on the right. No-op on pages without #NM_table_div.
+        var nmDiv = document.getElementById('NM_table_div');
+        if (nmDiv) {
+            sp(nmDiv, 'width', '100%');
+            sp(nmDiv, 'display', 'flex');
+            sp(nmDiv, 'flex-wrap', 'wrap');
+            sp(nmDiv, 'justify-content', 'space-evenly');
+            sp(nmDiv, 'align-items', 'flex-start');
+            var kids = nmDiv.children;
+            var k;
+            for (k = 0; k < kids.length; k++) {
+                sp(kids[k], 'float', 'none');
+                sp(kids[k], 'width', 'auto');
+                sp(kids[k], 'flex', '0 0 auto');
+                sp(kids[k], 'box-sizing', 'border-box');
+            }
         }
     }
 

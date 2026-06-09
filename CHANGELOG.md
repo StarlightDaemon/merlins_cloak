@@ -2,6 +2,29 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.2.0] - 2026-06-08
+### Fixed
+- Widescreen layout now visibly applies. Confirmed via live in-page diagnostic:
+  `table.content`, `.banner1`, `.statusBar`, `.minup_bg` all expand to 1468px on
+  an 1835px viewport (80vw). The earlier "nothing changed" report was the home
+  page network map -- a fixed-geometry graphic that cannot reflow -- sitting left
+  in the now-wide column, not a failure of the width expansion itself.
+- `patchWidescreenLayout()` now spreads the network map's two fixed halves
+  (topology diagram + System Status panel) across the widened column via
+  `#NM_table_div { display:flex; justify-content:space-evenly }` with the
+  children un-floated to their natural widths -- removes the dark gap on the right
+- Switched the CSS width from `clamp(998px,80vw,1600px)` to explicit
+  `width:80vw / min-width:998px / max-width:1600px` (same result; avoids any
+  parser that would drop a whole declaration on an unrecognized `clamp()`)
+- `patchWidescreenLayout()` now walks every ancestor of `table.content` up to
+  `body`, making wrapper divs full-width so the clamped table can center
+### Removed
+- Temporary `fjnWidescreenDiag()` overlay (served its debugging purpose)
+### Known limitation
+- The home page network map is fixed-geometry and cannot grow; widescreen mode
+  spreads its halves to fill the width. Settings pages (forms) reflow naturally.
+- Footer (`.bottom-image`, `.copyright`) stays at 998px and centers; harmless
+
 ## [4.1.0] - 2026-06-08
 ### Added
 - `widescreenLayout` toggle (default on): expands the fixed 998px layout to

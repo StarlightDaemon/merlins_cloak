@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.7
+// @version      4.4.8
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -464,11 +464,12 @@
         function hide(el) { if (el) { sp(el, 'display', 'none'); } }
 
         // Make the table a horizontal flex row; each <tr> becomes a node column.
-        // align-items:center lets Internet/Router nodes be their natural height
-        // and float vertically centered beside the taller right column.
+        // align-items:stretch makes all three node cards (Internet, Router,
+        // right column) share one height -- a matched card row. Each card then
+        // centers its own content vertically via justify-content:center below.
         sp(topoTable, 'display', 'flex');
         sp(topoTable, 'flex-direction', 'row');
-        sp(topoTable, 'align-items', 'center');
+        sp(topoTable, 'align-items', 'stretch');
         sp(topoTable, 'height', 'auto');
         sp(topoTable, 'width', '100%');
 
@@ -476,7 +477,7 @@
         if (tbody) {
             sp(tbody, 'display', 'flex');
             sp(tbody, 'flex-direction', 'row');
-            sp(tbody, 'align-items', 'center');
+            sp(tbody, 'align-items', 'stretch');
             sp(tbody, 'width', '100%');
         }
 
@@ -489,7 +490,9 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
+                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
+                sp(row, 'background', FUJIN.blockBg);
                 var spacerTd = row.cells && row.cells[0];
                 if (spacerTd && spacerTd.getAttribute('rowspan')) { hide(spacerTd); }
             } else if (i === 1) {
@@ -513,7 +516,9 @@
                 sp(row, 'display', 'flex');
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
+                sp(row, 'justify-content', 'center');
                 sp(row, 'flex', '1 1 auto');
+                sp(row, 'background', FUJIN.blockBg);
             } else if (i === 3) {
                 // Branch row: replace split-PNG with a simple horizontal connector
                 sp(row, 'display', 'flex');
@@ -536,6 +541,7 @@
                 sp(row, 'flex-direction', 'column');
                 sp(row, 'align-items', 'stretch');
                 sp(row, 'flex', '1 1 auto');
+                sp(row, 'background', FUJIN.blockBg);
                 hide(document.getElementById('clientspace_td'));
                 var viewListBtn = document.querySelector('#clients_td .button_gen');
                 if (viewListBtn) { sp(viewListBtn, 'display', 'none'); }
@@ -554,6 +560,7 @@
                 sp(allTds[j], 'min-width', '0');
                 sp(allTds[j], 'height', 'auto');
                 sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'background', FUJIN.blockBg);
                 sp(allTds[j], 'display', 'flex');
                 sp(allTds[j], 'justify-content', 'center');
                 sp(allTds[j], 'align-items', 'center');
@@ -566,11 +573,13 @@
                 sp(allTds[j], 'min-width', '0');
                 sp(allTds[j], 'height', 'auto');
                 sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'background', FUJIN.blockBg);
                 sp(allTds[j], 'padding', '8px 10px');
             } else if (cn.indexOf('NM_radius') !== -1) {
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');
                 sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'background', FUJIN.blockBg);
             }
         }
 
@@ -579,7 +588,9 @@
             sp(clientsTd, 'display', 'flex');
             sp(clientsTd, 'flex-direction', 'column');
             sp(clientsTd, 'align-items', 'center');
+            sp(clientsTd, 'justify-content', 'center');
             sp(clientsTd, 'text-align', 'center');
+            sp(clientsTd, 'flex', '1 1 auto');
             sp(clientsTd, 'padding', '12px 8px');
             sp(clientsTd, 'box-sizing', 'border-box');
         }
@@ -601,6 +612,7 @@
             sp(usbTd, 'align-items', 'center');
             sp(usbTd, 'justify-content', 'center');
             sp(usbTd, 'text-align', 'center');
+            sp(usbTd, 'flex', '1 1 auto');
             sp(usbTd, 'padding', '12px 8px');
             sp(usbTd, 'box-sizing', 'border-box');
             sp(usbTd, 'border-top', '1px solid ' + FUJIN.borderMenu);

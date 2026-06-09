@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.2
+// @version      4.4.3
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -302,6 +302,11 @@
             '#overDiv_table1,#overDiv_table2,#overDiv_table3,#overDiv_table4,#overDiv_table5 {',
             '  border-radius:0 !important;',
             '  -webkit-border-radius:0 !important;',
+            '}',
+
+            /* Topology connector bars -- stock class is invisible on our dark bg */
+            '.single_wan_connected, .primary_wan_connected, .secondary_wan_connected {',
+            '  background:' + FUJIN.borderMenu + ' !important;',
             '}'
         ];
 
@@ -478,6 +483,7 @@
                     sp(wanBar, 'width', '36px');
                     sp(wanBar, 'height', '4px');
                     sp(wanBar, 'margin', 'auto');
+                    sp(wanBar, 'background', FUJIN.borderMenu);
                 }
                 hide(document.getElementById('primary_wan_line'));
                 hide(document.getElementById('secondary_wan_line'));
@@ -501,6 +507,7 @@
                     sp(line3s, 'width', '36px');
                     sp(line3s, 'height', '4px');
                     sp(line3s, 'margin', 'auto');
+                    sp(line3s, 'background', FUJIN.borderMenu);
                 }
             } else if (i === 4) {
                 // USB / Clients column
@@ -520,11 +527,17 @@
         for (j = 0; j < allTds.length; j++) {
             cn = allTds[j].className || '';
             if (cn.indexOf('NM_radius_left') !== -1) {
+                allTds[j].removeAttribute('align');
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');
                 sp(allTds[j], 'box-shadow', 'none');
+                sp(allTds[j], 'display', 'flex');
+                sp(allTds[j], 'justify-content', 'center');
+                sp(allTds[j], 'align-items', 'center');
                 sp(allTds[j], 'text-align', 'center');
                 sp(allTds[j], 'padding', '10px');
+                var icon = allTds[j].querySelector('#iconInternet, #iconRouter');
+                if (icon) { sp(icon, 'margin', '0'); }
             } else if (cn.indexOf('NM_radius_right') !== -1) {
                 sp(allTds[j], 'width', 'auto');
                 sp(allTds[j], 'min-width', '0');
@@ -535,6 +548,17 @@
                 sp(allTds[j], 'min-width', '0');
                 sp(allTds[j], 'box-shadow', 'none');
             }
+        }
+
+        var usbTd = document.getElementById('usb_td');
+        if (usbTd) {
+            sp(usbTd, 'text-align', 'center');
+            sp(usbTd, 'align-items', 'center');
+        }
+        var clientsTd = document.getElementById('clients_td');
+        if (clientsTd) {
+            sp(clientsTd, 'text-align', 'center');
+            sp(clientsTd, 'align-items', 'center');
         }
     }
 
@@ -593,7 +617,7 @@
             sp(nmTableCont, 'width', '100%');
             sp(nmTableCont, 'height', 'auto');
             sp(nmTableCont, 'min-height', '0');
-            sp(nmTableCont, 'padding-bottom', '10px');
+            sp(nmTableCont, 'padding', '0');
         }
     }
 

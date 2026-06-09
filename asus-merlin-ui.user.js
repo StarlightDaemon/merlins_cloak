@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.4.3
+// @version      4.4.4
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -341,7 +341,20 @@
                 '.main-block > .display-flex.flex-a-center { grid-column:1 / -1 !important; }',
                 '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }',
                 /* Network map container: auto height so the topology strip is compact */
-                '#NM_table { width:100% !important; height:auto !important; min-height:0 !important; }'
+                '#NM_table { width:100% !important; height:auto !important; min-height:0 !important; }',
+                /* Compact topology icons -- scale to 64px so the right column */
+                /* (Clients + AiMesh + USB stacked) stays ~250px tall          */
+                '#iconInternet, #iconRouter, #iconClient {',
+                '  width:64px !important; height:64px !important;',
+                '  background-size:contain !important;',
+                '  margin:0 !important;',
+                '}',
+                '.iconAMesh, .iconAMesh_dis, .iconNo, .iconNoM2,',
+                '.iconUSBdisk, .iconM2, .iconPrinter {',
+                '  width:64px !important; height:64px !important;',
+                '  background-size:contain !important;',
+                '  margin:0 !important;',
+                '}'
             );
         }
 
@@ -516,7 +529,8 @@
                 sp(row, 'align-items', 'stretch');
                 sp(row, 'flex', '1 1 auto');
                 hide(document.getElementById('clientspace_td'));
-                hide(document.getElementById('clients_td'));
+                var viewListBtn = document.querySelector('#clients_td .button_gen');
+                if (viewListBtn) { sp(viewListBtn, 'display', 'none'); }
             }
         }
 
@@ -552,6 +566,7 @@
 
         var usbTd = document.getElementById('usb_td');
         if (usbTd) {
+            sp(usbTd, 'min-height', '0');
             sp(usbTd, 'text-align', 'center');
             sp(usbTd, 'align-items', 'center');
         }

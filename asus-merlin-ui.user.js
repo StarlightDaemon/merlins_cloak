@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.5.6
+// @version      4.5.7
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @match        http://192.168.1.1/*
@@ -252,6 +252,17 @@
             '.devicepin { background-color:var(--fjn-cell-bg) !important; color:var(--fjn-text) !important; }',
             '.inputinfo { background-color:var(--fjn-input-bg) !important; }',
 
+            '/* Disabled and read-only input states */',
+            'input:disabled, input[readonly] {',
+            '  background-color:var(--fjn-cell-bg) !important;',
+            '  color:var(--fjn-text) !important;',
+            '  border:1px solid var(--fjn-border-dark) !important;',
+            '}',
+            '.input {',
+            '  background-color:var(--fjn-input-bg) !important;',
+            '  color:var(--fjn-text) !important;',
+            '}',
+
             /* Buttons */
             '.button_gen, .button_gen_dis {',
             '  background:var(--fjn-bg-title) !important;',
@@ -366,7 +377,21 @@
                visible on our dark bg in case the strip degrades to stock layout. */
             '.single_wan_connected, .primary_wan_connected, .secondary_wan_connected {',
             '  background:var(--fjn-border-menu) !important;',
-            '}'
+            '}',
+
+            '/* AiMesh toggle switches */',
+            '.switch.off { background-color:var(--fjn-nav-bg) !important; }',
+            '.switch.on  { background-color:var(--fjn-accent-bright) !important; }',
+            '/* AiMesh location select */',
+            '#sel_location {',
+            '  background-color:var(--fjn-input-bg) !important;',
+            '  color:var(--fjn-text) !important;',
+            '  border:1px solid var(--fjn-border-input) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '/* QoS bandwidth bar fills */',
+            '[id$="_upload_bar"]   { background-color:var(--fjn-accent-btn) !important; }',
+            '[id$="_download_bar"] { background-color:var(--fjn-accent-bright) !important; }'
         ];
         _cssCache.theme = _p.join('\n');
         return _cssCache.theme;

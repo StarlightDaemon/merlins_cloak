@@ -1022,18 +1022,22 @@
             }
         }
     } else {
-        if (loadSetting('theme')) { injectStyleEl(document, 'fujin-theme', buildThemeCSS()); }
-        if (loadSetting('widescreenLayout')) { injectStyleEl(document, 'fujin-layout', buildLayoutCSS(false)); }
-        if (loadSetting('hideViewListBtn')) { injectStyleEl(document, 'fujin-hides', buildHidesCSS()); }
-        registerMenuCommands();
-        if (loadSetting('widescreenLayout')) {
-            patchWidescreenAttrs();
-            tagNetworkMapHome();
+        try {
+            if (loadSetting('theme')) { injectStyleEl(document, 'fujin-theme', buildThemeCSS()); }
+            if (loadSetting('widescreenLayout')) { injectStyleEl(document, 'fujin-layout', buildLayoutCSS(false)); }
+            if (loadSetting('hideViewListBtn')) { injectStyleEl(document, 'fujin-hides', buildHidesCSS()); }
+            registerMenuCommands();
+            if (loadSetting('widescreenLayout')) {
+                patchWidescreenAttrs();
+                tagNetworkMapHome();
+            }
+            if (loadSetting('theme') || loadSetting('widescreenLayout')) {
+                watchStatusframe();
+            }
+            injectSettingsButton();
+        } catch (e) {
+            console.error('Merlin\'s Cloak init error: ' + e);
         }
-        if (loadSetting('theme') || loadSetting('widescreenLayout')) {
-            watchStatusframe();
-        }
-        injectSettingsButton();
     }
 
 })();

@@ -679,7 +679,10 @@
             '  width:100% !important; border-radius:0 !important;',
             '}',
             '.FormTable:has(canvas) { margin-left:auto !important; margin-right:auto !important; }',
-            '.chartCanvas { display:block !important; margin-left:auto !important; margin-right:auto !important; }'
+            '.chartCanvas { display:block !important; margin-left:auto !important; margin-right:auto !important; }',
+            '/* Title/description divider: stock .splitLine is pinned ~740px and',
+            '   no longer spans the widened header; let it fill. */',
+            '.splitLine { width:auto !important; }'
         ];
 
         if (isFrame) {

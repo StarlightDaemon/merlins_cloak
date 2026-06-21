@@ -663,7 +663,23 @@
             '  width:100% !important; box-sizing:border-box !important;',
             '}',
             '.main-block > .display-flex.flex-a-center { grid-column:1 / -1 !important; }',
-            '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }'
+            '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }',
+
+            '/* --- Settings pages: fill the widened content column ---',
+            '   Stock content tables are pinned ~760px and left-aligned, leaving',
+            '   dead space on the right once the chrome is widescreen. Fill the',
+            '   form/table content to the column. Chart wrappers (fixed-size',
+            '   canvases) must NOT be stretched, so :has(canvas) is excluded from',
+            '   the fill and centered instead. :has() is supported in current',
+            '   browsers; where it is not, the rule is ignored and the page falls',
+            '   back to the stock (un-widened) content -- no worse than before. */',
+            '.FormTitle:not(:has(canvas)) { width:100% !important; border-radius:0 !important; }',
+            '#tabMenu { max-width:100% !important; }',
+            '.FormTable:not(:has(canvas)), .FormTable_table, .FormTable_NWM {',
+            '  width:100% !important; border-radius:0 !important;',
+            '}',
+            '.FormTable:has(canvas) { margin-left:auto !important; margin-right:auto !important; }',
+            '.chartCanvas { display:block !important; margin-left:auto !important; margin-right:auto !important; }'
         ];
 
         if (isFrame) {

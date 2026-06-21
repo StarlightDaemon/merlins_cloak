@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.5.7
+// @version      4.6.0
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
+// @downloadURL  https://raw.githubusercontent.com/StarlightDaemon/merlins_cloak/main/asus-merlin-ui.user.js
+// @updateURL    https://raw.githubusercontent.com/StarlightDaemon/merlins_cloak/main/asus-merlin-ui.user.js
 // @match        http://192.168.1.1/*
 // @match        https://192.168.1.1/*
 // @match        http://router.asus.com/*

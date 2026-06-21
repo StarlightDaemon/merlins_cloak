@@ -391,7 +391,24 @@
             '}',
             '/* QoS bandwidth bar fills */',
             '[id$="_upload_bar"]   { background-color:var(--fjn-accent-btn) !important; }',
-            '[id$="_download_bar"] { background-color:var(--fjn-accent-bright) !important; }'
+            '[id$="_download_bar"] { background-color:var(--fjn-accent-bright) !important; }',
+
+            '/* jQuery UI sliders (Wireless Professional, etc.) -- light blue range',
+            '   fill and light gray handle on the stock widget */',
+            '.ui-slider {',
+            '  background-color:var(--fjn-cell-bg) !important;',
+            '  border:1px solid var(--fjn-border-input) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '.ui-slider .ui-slider-range, .ui-slider-range {',
+            '  background:var(--fjn-accent-bright) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '.ui-slider .ui-slider-handle, .ui-slider-handle {',
+            '  background:var(--fjn-input-bg) !important;',
+            '  border:1px solid var(--fjn-border-input) !important;',
+            '  border-radius:0 !important;',
+            '}'
         ];
         _cssCache.theme = _p.join('\n');
         return _cssCache.theme;

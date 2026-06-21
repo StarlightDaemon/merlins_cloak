@@ -427,6 +427,20 @@
             'i[class^="type"], i.vendor-icon {',
             '  background-color:var(--fjn-input-bg) !important;',
             '  border-radius:0 !important;',
+            '}',
+
+            '/* Native range sliders (e.g. Smart Connect band-steering',
+            '   thresholds) render with a white track/thumb on the stock UI */',
+            'input[type="range"] {',
+            '  accent-color:var(--fjn-accent-bright) !important;',
+            '  background-color:transparent !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '/* Apply-settings loading word overlay (white stock box) */',
+            '.drword, .drsword {',
+            '  background-color:var(--fjn-bg-overlay) !important;',
+            '  color:var(--fjn-text) !important;',
+            '  border-radius:0 !important;',
             '}'
         ];
         _cssCache.theme = _p.join('\n');

@@ -174,6 +174,7 @@
             'html::-webkit-scrollbar-track { background-color:var(--fjn-bg-dark) !important; }',
 
             /* Page */
+            'html { background-color:var(--fjn-bg-page) !important; }',
             'body { background-color:var(--fjn-bg-page) !important; color:var(--fjn-text) !important; }',
 
             /* Navigation sidebar */
@@ -302,6 +303,19 @@
             /* Status bar row and main content area (removes PNG tile backgrounds) */
             '.statusBar, .minup_bg { background-image:none !important; background-color:var(--fjn-bg-dark) !important; }',
             'table.content, .mindown_bg { background-image:none !important; background-color:var(--fjn-bg-page) !important; }',
+            '/* Footer utility bar (Help & Support / FAQ search). Stock',
+            '   bottom_bg.png renders a black bar that clashes with the theme. */',
+            '.bottom-image {',
+            '  background-image:none !important;',
+            '  background-color:var(--fjn-bg-dark) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '.input_FAQ_table {',
+            '  background-color:var(--fjn-input-bg) !important;',
+            '  color:var(--fjn-text) !important;',
+            '  border:1px solid var(--fjn-border-input) !important;',
+            '  border-radius:0 !important;',
+            '}',
 
             /* Semantic bg helpers */
             '.content_bg, .list_bg, .MainContent { background:var(--fjn-content-bg) !important; }',

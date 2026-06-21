@@ -495,7 +495,7 @@
             rootVarsCSS(),
 
             /* --- Widescreen chrome: 80vw clamped between 998 and 1600 --- */
-            '.banner1, .statusBar, .minup_bg, table.content {',
+            '.banner1, .statusBar, .minup_bg, table.content, .bottom-image, .copyright {',
             '  width:80vw !important;',
             '  min-width:998px !important;',
             '  max-width:1600px !important;',
@@ -673,10 +673,10 @@
             /* --- Status dashboard grid (statusframe document) --- */
             '.main-block {',
             '  display:grid !important;',
-            '  grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)) !important;',
+            '  grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)) !important;',
             '  grid-gap:12px !important; gap:12px !important;',
             '  align-items:start !important;',
-            '  width:100% !important; box-sizing:border-box !important;',
+            '  width:100% !important; margin:0 !important; box-sizing:border-box !important;',
             '}',
             '.main-block > .display-flex.flex-a-center { grid-column:1 / -1 !important; }',
             '.main-block > .unit-block { width:auto !important; margin:0 !important; box-sizing:border-box !important; }',

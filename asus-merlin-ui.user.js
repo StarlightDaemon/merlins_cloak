@@ -408,6 +408,25 @@
             '  background:var(--fjn-input-bg) !important;',
             '  border:1px solid var(--fjn-border-input) !important;',
             '  border-radius:0 !important;',
+            '}',
+
+            '/* Network Map: USB label text, hover hint tooltip, client-list',
+            '   cards and the default type/vendor icon squares (stock white) */',
+            '.usb_text { color:var(--fjn-text) !important; }',
+            '.navtext, #navtxt {',
+            '  background-color:var(--fjn-bg-overlay) !important;',
+            '  color:var(--fjn-text) !important;',
+            '  border:1px solid var(--fjn-border-menu) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            '.clientBg {',
+            '  background-image:none !important;',
+            '  background-color:var(--fjn-block-bg) !important;',
+            '  border-radius:0 !important;',
+            '}',
+            'i[class^="type"], i.vendor-icon {',
+            '  background-color:var(--fjn-input-bg) !important;',
+            '  border-radius:0 !important;',
             '}'
         ];
         _cssCache.theme = _p.join('\n');

@@ -441,6 +441,13 @@
             '  background-color:var(--fjn-bg-overlay) !important;',
             '  color:var(--fjn-text) !important;',
             '  border-radius:0 !important;',
+            '}',
+
+            '/* Firmware upgrade / settings-restore progress track (stock white) */',
+            '.Bar_container {',
+            '  background-color:var(--fjn-block-bg) !important;',
+            '  border:1px solid var(--fjn-border-input) !important;',
+            '  border-radius:0 !important;',
             '}'
         ];
         _cssCache.theme = _p.join('\n');

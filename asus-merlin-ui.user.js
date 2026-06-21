@@ -675,7 +675,7 @@
             '   stranded with dead space. :has() is supported in current browsers;',
             '   where absent the rule is ignored and the page falls back to the',
             '   stock content -- no worse than before. */',
-            '.FormTitle { width:100% !important; border-radius:0 !important; }',
+            '.FormTitle, #FormTitle, .upnp_table { width:100% !important; border-radius:0 !important; }',
             '#tabMenu { max-width:100% !important; }',
             '.FormTable:not(:has(canvas)), .FormTable_table, .FormTable_NWM {',
             '  width:100% !important; border-radius:0 !important;',

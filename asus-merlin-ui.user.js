@@ -448,6 +448,15 @@
             '  background-color:var(--fjn-block-bg) !important;',
             '  border:1px solid var(--fjn-border-input) !important;',
             '  border-radius:0 !important;',
+            '}',
+
+            '/* Native UA controls: render checkboxes, radios, select drop-down',
+            '   popups and scrollbars in dark mode (otherwise the unchecked',
+            '   radio/checkbox and the open select popup stay stock white), and',
+            '   brand the checked state with the accent. */',
+            ':root { color-scheme:dark !important; }',
+            'input[type="checkbox"], input[type="radio"] {',
+            '  accent-color:var(--fjn-accent-bright) !important;',
             '}'
         ];
         _cssCache.theme = _p.join('\n');

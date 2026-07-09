@@ -2,6 +2,90 @@
 
 All notable changes to Merlin's Cloak are documented here.
 
+## [4.5.7] - 2026-06-17
+### Fixed
+- Disabled and read-only inputs now receive Fujin surface colors (`input:disabled`,
+  `input[readonly]`) instead of the browser default grey, which was visible on
+  settings pages with non-editable fields.
+- AiMesh toggle switches themed: `.switch.off` uses `navBg`; `.switch.on` uses
+  `accentBright` (was inheriting an unset background).
+- QoS bandwidth bars themed: upload bars use `accentBtn`; download bars use
+  `accentBright`, matching the accent palette.
+
+## [4.5.0–4.5.6] - 2026-06-17
+### Changed
+- Major architecture rewrite: replaced JS `setProperty(...,'important')` patching
+  with CSS-class-based styling. Author stylesheet rules with `!important` reliably
+  beat the router's plain inline style writes; JS `setProperty` patches were
+  destroyed by subsequent plain inline writes, requiring staggered retry timers.
+  Retry timers removed entirely.
+- Three independent stylesheets introduced: `#fujin-theme` (colors/fonts/radius),
+  `#fujin-layout` (widescreen + topology strip + status grid), `#fujin-hides`
+  (optional element hides). Each is self-contained with its own `:root` vars block
+  so every toggle works in isolation.
+- `patchWidescreenAttrs()` and `tagNetworkMapHome()` replace the old JS patching
+  functions. Both are one-shot idempotent passes that tag layout roles with `fjn-*`
+  classes; all visual rules live in the layout stylesheet keyed to those classes.
+- Dynamic statusframe height via CSS custom property: `attachHeightReporter()`
+  attaches a MutationObserver + ResizeObserver + safety interval inside the iframe
+  and feeds `--fjn-sf-h` on the top document. Stylesheet pins `#statusframe` height
+  to `var(--fjn-sf-h)`; the router's `set_NM_height()` / `reset_NM_height()` inline
+  writes are inert against the stylesheet pin.
+- Topology strip refined to card-style layout: Internet, Router, and leaf nodes
+  (Clients / AiMesh / USB) each render as distinct bordered cards with gaps between
+  them; icons top-aligned; connector rows hidden via `display:none`.
+### Fixed
+- Sidebar background fill: added `td.bgarrow` and `#mainMenu` background rules to
+  `buildThemeCSS()` so the sidebar color extends to the page edge on all pages.
+
+## [4.4.9] - 2026-06-09
+### Changed
+- Topology strip height fixed at 250px; 3-band right column (Clients / AiMesh / USB)
+  balanced so each sub-card matches the Internet and Router node heights.
+
+## [4.4.8] - 2026-06-09
+### Changed
+- Three leaf-row cards (Clients, AiMesh, USB) matched to equal height using
+  `align-items:stretch`; uniform background applied across all topology cards.
+
+## [4.4.7] - 2026-06-09
+### Changed
+- Internet and Router nodes center-aligned within the strip columns; fixed heights
+  cleared so nodes size to content.
+
+## [4.4.6] - 2026-06-09
+### Fixed
+- Topology spacing: Internet and Router columns centered within their flex cells;
+  right leaf panel split into three equal sections (Clients / AiMesh / USB).
+
+## [4.4.5] - 2026-06-09
+### Fixed
+- Topology icons showing as double-image: switched `background-size` from `contain`
+  (which scales the full sprite sheet — both states — into the box) to
+  `width auto` so only one sprite state is visible.
+
+## [4.4.4] - 2026-06-09
+### Fixed
+- Clients and AiMesh nodes restored after being inadvertently hidden; USB node
+  `min-height` corrected; topology icons compacted.
+
+## [4.4.3] - 2026-06-09
+### Changed
+- Topology icons centered within their cells; connector bars made visible on the
+  dark background; node padding reduced for a more compact strip.
+
+## [4.4.2] - 2026-06-09
+### Fixed
+- `#NM_table` background color was reverting to an unstyled color after the
+  topology rewrite; rule added to `buildFujinCSS()` to pin it to `bgPage`.
+
+## [4.4.1] - 2026-06-09
+### Fixed
+- `#clients_td` was re-appearing after being hidden by the topology pass; corrected
+  the rule ordering so the flex display takes precedence.
+- Topology column widths equalized so Internet, Router, and leaf nodes share equal
+  horizontal space.
+
 ## [4.4.0] - 2026-06-09
 ### Changed
 - Network map topology reoriented from vertical (top-to-bottom) to horizontal

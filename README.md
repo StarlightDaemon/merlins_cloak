@@ -1,59 +1,37 @@
 # Merlin's Cloak
 
-A Violentmonkey userscript that re-themes and reorganizes the AsusWRT-Merlin router web UI — no firmware modification, no SSH, no JFFS scripts required. Everything runs client-side in your browser.
+A Violentmonkey userscript that re-themes the AsusWRT-Merlin router web UI — no firmware modification, no SSH, no JFFS scripts required. Everything runs client-side in your browser.
 
 **Target hardware:** Asus RT-BE92U  
 **Firmware:** AsusWRT-Merlin `3006.102.7_2` and compatible  
-**Status:** Active development — full dark theme in progress
+**Status:** Active development — dark theme broadly applied; per-settings-page coverage ongoing
 
 ---
 
 ## What It Does
 
-### Menu Overhaul
-The stock Merlin sidebar is a flat list of 15+ items with no grouping. This script rebuilds it into three labeled sections and hides items you rarely need:
+### Fujin Dark Theme
+Injects a full dark theme stylesheet (`#fujin-theme`) that overrides every major Merlin CSS selector: backgrounds, surfaces, borders, text, inputs, buttons, tabs, form tables, status panel blocks, and navigation. All colors come from the Fujin design system token map, sourced from the router's own CSS files. All border-radius values are zero (Fujin `tokens.radius.default = 0`).
 
-```
-General
-  Network Map
-  Client List      <- custom page (see below)
-  AiMesh
-  Network
-  Adaptive QoS
-  Traffic Analyzer
+### Widescreen Layout
+Expands the fixed 998px layout to `80vw` (clamped between 998px and 1600px), giving ~40–60% more usable width on 1920px+ displays. The sidebar stays pinned at 204px; the content column gets the remaining space.
 
-Network Settings
-  Wireless
-  LAN
-  WAN
-  IPv6
-  VPN
-  Firewall
+### Topology Strip
+On the home page, reshapes the stock vertical network map into a horizontal card strip. Five equal-width nodes read left-to-right: Internet → Router → Clients / AiMesh / USB. Connector rows are hidden; the router's JS continues to update node content and status icons.
 
-System Tools
-  Administration
-  System Info
-  System Log
-  Network Tools
-```
+### Dynamic Statusframe Height
+The System Status iframe height is driven by a CSS custom property (`--fjn-sf-h`) fed by a height reporter inside the iframe. The reporter uses a MutationObserver to track content changes and writes the measured height back to the top document. The stylesheet pin (`height:var(--fjn-sf-h) !important`) keeps the router's own `set_NM_height()` writes inert.
 
-Hidden by default (easily re-enabled): AiProtection, Parental Controls, USB Application, Amazon Alexa, Quick Internet Setup.
+### Settings Panel
+A `[=]` button (fixed, top-right of every page) opens a dark overlay with three independent toggles:
 
-### Client List Grid
-Replaces Merlin's modal-based client list with a custom card grid embedded directly in the page:
-- Filter tabs: All / Wired / Wireless
-- Real-time search by name, IP, MAC, or vendor
-- Color-coded connection badges (blue = Wired, green = 2.4GHz, orange = 5GHz, purple = 6GHz)
-- Sorted by IP address
+| Toggle | Default | Effect |
+|--------|---------|--------|
+| Fujin Theme | On | Dark theme stylesheet |
+| Widescreen Layout | On | 80vw layout + topology strip |
+| Hide View List Button | On | Hides the modal View List button in the network map |
 
-### Router Info in System Status
-Injects your Operation Mode and Firmware version into the System Status panel on the home page, so you can see it at a glance without digging into Administration.
-
-### Logo Home Link
-Clicking the ASUS logo in the top banner takes you back to the Network Map / home page.
-
-### Header Cleanup
-Hides the redundant "Operation Mode / Firmware" bar below the banner (that info is now in the Status panel) and the Merlin logo overlay.
+Each toggle saves to GM storage (or localStorage) and reloads the page. The same toggles are available in the userscript manager popup via `GM_registerMenuCommand`.
 
 ---
 
@@ -78,32 +56,12 @@ Hides the redundant "Operation Mode / Firmware" bar below the banner (that info 
 
 ---
 
-## Customization
-
-### Re-enabling hidden menu items
-Open the script in Violentmonkey's editor and remove the entry for any item you want to restore from the `HIDE_IDS` object near the top:
-
-```javascript
-var HIDE_IDS = {
-    'AiProtection_HomeProtection_menu': true,   // remove this line to show AiProtection
-    'AiProtection_WebProtector_menu':   true,   // remove to show Parental Controls
-    'APP_Installation_menu':            true,   // remove to show USB Application
-    'Advanced_Smart_Home_Alexa_menu':   true,   // remove to show Amazon Alexa
-    'QIS_wizard_menu':                  true    // remove to show Quick Internet Setup
-};
-```
-
-### Changing the menu order
-Edit the `LAYOUT` array. Each `{ type: 'MENU', id: '...' }` entry corresponds to one nav item by its exact DOM id. `{ type: 'SEPARATOR', label: 'Section Name' }` inserts a labeled divider.
-
----
-
 ## Compatibility
 
 | Router | Firmware | Status |
 |--------|----------|---------|
 | RT-BE92U | Merlin 3006.102.7_2 | Tested, working |
-| Other Merlin devices | Recent Merlin | Likely compatible — menu IDs are consistent across models |
+| Other Merlin devices | Recent Merlin | Likely compatible — DOM structure is consistent across models |
 
 The script targets standard Merlin UI DOM structure. Stock AsusWRT (non-Merlin) may work but is untested.
 
@@ -113,14 +71,14 @@ The script targets standard Merlin UI DOM structure. Stock AsusWRT (non-Merlin) 
 
 The Merlin UI is a table-based XHTML layout from circa 2015 running in Almost Standards Mode. The script is written in strict ES5 for compatibility with the embedded browser context Violentmonkey injects into. No ES6+ features (arrow functions, template literals, const/let, etc.) are used.
 
+The router's own JavaScript sets inline styles with plain `element.style.width = '...'` writes. Author stylesheet rules with `!important` beat plain inline styles, so no JS-based re-application timers are needed for layout. JS is used only for things CSS cannot do: removing HTML attributes, tagging layout roles with `fjn-*` classes, and measuring iframe content height.
+
 ---
 
 ## Roadmap
 
-- [ ] Full dark theme (deep dark with ASUS teal/blue accents)
-- [ ] Complete re-theme of all major pages (Wireless, LAN, WAN, VPN, etc.)
-- [ ] Client list: Refresh button, Offline devices tab
-- [ ] Sidebar background fill below last menu item
+- [ ] Complete per-settings-page theme coverage (Wireless, VPN, AiMesh subpages, diagnostic pages)
+- [ ] Statusframe timing: MutationObserver fallback for edge-case iframe load events
 
 ---
 

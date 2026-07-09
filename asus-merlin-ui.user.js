@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.6.2
+// @version      4.6.3
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @downloadURL  https://raw.githubusercontent.com/StarlightDaemon/merlins_cloak/main/asus-merlin-ui.user.js
@@ -983,17 +983,28 @@
         // (matching the settle-timer pattern in attachHeightReporter)
         // cover the case where the mutation fires before the new document
         // has replaced the old one.
+        //
+        // Every mutation CANCELS any outstanding burst and re-arms a
+        // fresh one. The router's real reset is TWO mutations (src=""
+        // then reassignment to the device-map path); a burst keyed only
+        // to the first would drop the second -- the navigation that
+        // actually matters -- if it lands mid-burst. Cancel-and-restart
+        // keeps retries bounded (at most 3 pending timers, terminating
+        // 1500ms after the LAST mutation) while guaranteeing each
+        // mutation a full retry window of its own.
+        var retryTimers = [];
+        function restartRetryBurst() {
+            var i;
+            for (i = 0; i < retryTimers.length; i++) { clearTimeout(retryTimers[i]); }
+            retryTimers = [
+                setTimeout(onLoad, 100),
+                setTimeout(onLoad, 500),
+                setTimeout(onLoad, 1500)
+            ];
+        }
         if (typeof MutationObserver !== 'undefined') {
-            var retryPending = false;
-            function scheduleRetries() {
-                if (retryPending) { return; }
-                retryPending = true;
-                setTimeout(onLoad, 100);
-                setTimeout(onLoad, 500);
-                setTimeout(function () { retryPending = false; onLoad(); }, 1500);
-            }
             try {
-                new MutationObserver(scheduleRetries).observe(sf, {
+                new MutationObserver(restartRetryBurst).observe(sf, {
                     attributes: true, attributeFilter: ['src']
                 });
             } catch (e) {}

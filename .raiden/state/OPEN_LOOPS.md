@@ -43,11 +43,20 @@ Numbered LOOP-xxx; IDs never reused; closed loops retained.
   (100ms/500ms/1500ms) when it fires. This directly targets the confirmed
   router behavior in `RAW/index.asp` (`statusframe.src = ""` then
   reassigned when `flag == "Internet" || flag == "Client"`), the exact
-  scenario the original open-loop note called out. Verified: `node --check`
-  syntax pass, no ES5-forbidden constructs (matches existing file style),
-  and a code-level walkthrough confirming `onLoad()`/`injectStyleEl()`/
-  `attachHeightReporter()` are all no-ops on redundant calls so extra
-  retries are safe. NOT verified: actual behavior against a live router or
-  a real Violentmonkey/ScriptCat injection context (no router available to
-  this agent) — status intentionally left short of Closed per the
-  honesty-first convention until an operator confirms live.
+  scenario the original open-loop note called out. Verification-probe
+  hardening (same day): the first cut gated the burst with a boolean, so a
+  second mutation landing mid-burst (the src reassignment — the navigation
+  that matters) was silently dropped. Reworked to cancel-and-restart: each
+  mutation clears any outstanding retry timers and arms a fresh
+  100/500/1500ms burst, so every mutation gets a full retry window while
+  retries stay bounded (max 3 pending timers, terminating 1500ms after the
+  last mutation). The scheduling function was also hoisted out of the `if`
+  block to top-level `watchStatusframe()` scope for strict-ES5 grammar
+  cleanliness. Verified: `node --check` syntax pass, no ES5-forbidden
+  constructs (matches existing file style), and a code-level walkthrough
+  confirming `onLoad()`/`injectStyleEl()`/`attachHeightReporter()` are all
+  no-ops on redundant calls so extra retries are safe. NOT verified: actual
+  behavior against a live router or a real Violentmonkey/ScriptCat
+  injection context (no router available to this agent) — status
+  intentionally left short of Closed per the honesty-first convention until
+  an operator confirms live.

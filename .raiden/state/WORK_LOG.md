@@ -36,3 +36,13 @@ inside dated entries, per the fact-home discipline.
   verified: live-router/live-injection behavior (no router available to
   this agent) — status recorded as implemented, pending live verification
   rather than closed.
+- LOOP-002 hardening (same day, follow-up commit): a verification probe
+  found the first cut's boolean burst gate dropped a second src mutation
+  landing mid-burst — the router's real reset is two mutations (src=""
+  then reassignment), so the one that matters could be missed. Reworked to
+  cancel-and-restart (each mutation clears pending retry timers and arms a
+  fresh 100/500/1500ms burst; bounded, terminates 1500ms after the last
+  mutation); scheduling function hoisted out of the `if` block for strict
+  ES5 grammar. `@version` 4.6.2 → 4.6.3. Re-verified: `node --check` pass,
+  ES5 construct scan clean, logic walkthrough. Live verification still
+  pending; loop status unchanged.

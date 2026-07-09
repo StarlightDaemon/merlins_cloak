@@ -4,7 +4,7 @@ A Violentmonkey userscript that re-themes the AsusWRT-Merlin router web UI — n
 
 **Target hardware:** Asus RT-BE92U  
 **Firmware:** AsusWRT-Merlin `3006.102.7_2` and compatible  
-**Status:** Active development — dark theme broadly applied; per-settings-page coverage ongoing
+**Status:** Active development — dark theme + widescreen layout coverage complete across ~70 audited pages (see Roadmap)
 
 ---
 
@@ -77,8 +77,8 @@ The router's own JavaScript sets inline styles with plain `element.style.width =
 
 ## Roadmap
 
-- [ ] Complete per-settings-page theme coverage (Wireless, VPN, AiMesh subpages, diagnostic pages)
-- [ ] Statusframe timing: MutationObserver fallback for edge-case iframe load events
+- [x] Complete per-settings-page theme coverage (Wireless, VPN, AiMesh subpages, diagnostic pages) — completed and verified live 2026-06-21 across ~70 audited pages; see `HANDOFF_FUJIN_THEME.md`
+- [ ] Statusframe timing: MutationObserver fallback for edge-case iframe load events — implemented in `watchStatusframe()`; pending live-router verification
 
 ---
 

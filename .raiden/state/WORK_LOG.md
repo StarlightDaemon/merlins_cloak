@@ -16,3 +16,23 @@ inside dated entries, per the fact-home discipline.
   threads found in the latest handoff (it self-describes as COMPLETE).
 - `.raiden/instance/metadata.json` written (`instance_form_type: ledger`,
   `state_schema_version: 2`).
+
+## 2026-07-09 — LOOP-001 reconciled closed, LOOP-002 fallback implemented
+
+- LOOP-001 reconciled against `HANDOFF_FUJIN_THEME.md`: the 2026-06-21
+  completion run audited all four roadmap-named areas (Wireless, VPN,
+  AiMesh, diagnostic pages) by name across ~70 pages; 5 fix commits
+  (`2ff48b8`, `767f251`, `6552944`, `3ce1201`, `09ce486`) confirmed present
+  on `main` and in the shipped script (grep-verified for their added
+  selectors: `.ui-slider`, `.navtext`, `.clientBg`, `.Bar_container`,
+  `color-scheme:dark`). No genuinely outstanding roadmap-scope pages found.
+  Closed as already-covered; README roadmap item checked off; CLAUDE.md
+  Open Loops section updated to match.
+- LOOP-002 implemented: `watchStatusframe()` gained a `MutationObserver`
+  on `#statusframe`'s `src` attribute (staggered 100/500/1500ms retries of
+  the existing idempotent `onLoad()`), targeting the confirmed
+  `statusframe.src = ""` reset in `RAW/index.asp`. Verified: `node --check`
+  syntax pass, ES5-style walkthrough, idempotency of downstream calls. Not
+  verified: live-router/live-injection behavior (no router available to
+  this agent) — status recorded as implemented, pending live verification
+  rather than closed.

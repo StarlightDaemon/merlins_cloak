@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Asus RT-BE92U - Merlin's Cloak
 // @namespace    https://github.com/StarlightDaemon/merlins_cloak
-// @version      4.6.1
+// @version      4.6.2
 // @description  Fujin theme for AsusWRT-Merlin router admin UI
 // @author       StarlightDaemon
 // @downloadURL  https://raw.githubusercontent.com/StarlightDaemon/merlins_cloak/main/asus-merlin-ui.user.js
@@ -970,6 +970,34 @@
         }
         sf.addEventListener('load', onLoad);
         onLoad();
+
+        // Fallback: some VM injection contexts / router-side src resets
+        // (statusframe.src="" then reassigned to a device-map path) do not
+        // reliably fire a clean 'load' event for this script instance, so
+        // the primary listener above can miss the injection window. A
+        // MutationObserver on the iframe's src attribute is the belt-and-
+        // suspenders backstop. onLoad() is idempotent -- injectStyleEl()
+        // no-ops if the style already exists in the (new) document and
+        // attachHeightReporter() no-ops via its data-fjn-reporter guard --
+        // so extra calls cost only a cheap DOM read. Staggered retries
+        // (matching the settle-timer pattern in attachHeightReporter)
+        // cover the case where the mutation fires before the new document
+        // has replaced the old one.
+        if (typeof MutationObserver !== 'undefined') {
+            var retryPending = false;
+            function scheduleRetries() {
+                if (retryPending) { return; }
+                retryPending = true;
+                setTimeout(onLoad, 100);
+                setTimeout(onLoad, 500);
+                setTimeout(function () { retryPending = false; onLoad(); }, 1500);
+            }
+            try {
+                new MutationObserver(scheduleRetries).observe(sf, {
+                    attributes: true, attributeFilter: ['src']
+                });
+            } catch (e) {}
+        }
     }
 
     // =========================================================

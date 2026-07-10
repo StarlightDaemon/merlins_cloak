@@ -46,3 +46,10 @@ inside dated entries, per the fact-home discipline.
   ES5 grammar. `@version` 4.6.2 → 4.6.3. Re-verified: `node --check` pass,
   ES5 construct scan clean, logic walkthrough. Live verification still
   pending; loop status unchanged.
+
+## 2026-07-09 — republished after history normalization
+
+- Upstream repo history was rewritten (identity normalization on prior
+  commits) and force-pushed; local clone re-pointed onto the new history
+  and stale pre-rewrite objects purged.
+- `@version` 4.6.3 → 4.6.4 to mark the republish; no functional changes.

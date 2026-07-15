@@ -1,5 +1,6 @@
 .claude/
 .serena/
+._*
 .DS_Store
 CLAUDE.md
 customizations-scratchpad.js

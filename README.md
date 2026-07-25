@@ -1,3 +1,6 @@
+> **⚠️ Deprecated — superseded by a full rebuild.**
+> This project has been superseded by [Merlin's Cloak v2](https://github.com/StarlightDaemon/merlins_cloak_v2), a full rebuild as a Manifest V3 browser extension for Chrome and Firefox rather than a userscript. This repository is archived and kept only for historical reference.
+
 # Merlin's Cloak
 
 A Violentmonkey userscript that re-themes the AsusWRT-Merlin router web UI — no firmware modification, no SSH, no JFFS scripts required. Everything runs client-side in your browser.
